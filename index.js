@@ -3,7 +3,7 @@ import FetchInput from './utils/FetchInput.js';
 import { printTitle } from './utils/PrettyPrint.js';
 
 
-const { d: dayArg, y: yearArg } = minimist(process.argv.slice(2));
+const { day: dayArg, year: yearArg } = minimist(process.argv.slice(2));
 
 const day = dayArg ?? new Date().getDate();
 const year = yearArg ?? new Date().getFullYear();
