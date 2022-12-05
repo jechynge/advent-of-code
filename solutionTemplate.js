@@ -1,6 +1,6 @@
 import { printResult } from '../utils/PrettyPrint.js';
 import PerformanceTimer from '../utils/PerformanceTimer.js';
-import { getLinesFromWindowsInput } from '../utils/Input.js';
+import { getLinesFromInput } from '../utils/Input.js';
 
 
 ////////////
@@ -9,9 +9,13 @@ import { getLinesFromWindowsInput } from '../utils/Input.js';
 
 
 export async function puzzle1(input) {
+    const timer = new PerformanceTimer('Puzzle 1');
+
     // ...todo
 
-    printResult(`Part 1 Result`, null);
+    timer.stop();
+
+    printResult(`Part 1 Result`, timer);
 }
 
 
@@ -21,7 +25,11 @@ export async function puzzle1(input) {
 
 
 export async function puzzle2(input) {
+    const timer = new PerformanceTimer('Puzzle 2');
+
     // ...todo
 
-    printResult(`Part 2 Result`, null);
+    timer.stop();
+
+    printResult(`Part 2 Result`, timer);
 }
