@@ -15,7 +15,7 @@ export async function puzzle1(input) {
 
     timer.stop();
 
-    printResult(`Part 1 Result`, timer);
+    printResult(`Part 1 Result`, null, timer);
 }
 
 
@@ -31,5 +31,5 @@ export async function puzzle2(input) {
 
     timer.stop();
 
-    printResult(`Part 2 Result`, timer);
+    printResult(`Part 2 Result`, null, timer);
 }

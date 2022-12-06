@@ -5,8 +5,11 @@ import { printTitle } from './utils/PrettyPrint.js';
 
 const { day: dayArg, year: yearArg } = minimist(process.argv.slice(2));
 
-const day = dayArg ?? new Date().getDate();
-const year = yearArg ?? new Date().getFullYear();
+const today = new Date();
+today.setHours(today.getHours() + 2);
+
+const day = dayArg ?? today.getDate();
+const year = yearArg ?? today.getFullYear();
 
 const paddedDay = day.toString().padStart(2, '0');
 
