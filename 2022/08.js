@@ -41,10 +41,6 @@ class TreeSurveyor {
     }
 
     isTreeVisibleFromEdgeEZ(x, y) {
-        if(this.isTreeOnEdge(x, y)) {
-            return true;
-        }
-        
         const maybeVisibleTreeHeight = this.getTreeHeight(x, y);
 
         const row = this.getRow(y);
@@ -166,10 +162,10 @@ class TreeSurveyor {
 export async function puzzle1(input) {
 
     const treeHeightGrid = getLinesFromInput(input).map(row => row.split('').map(height => parseInt(height)));
+    
+    const treeSurveyorOptimized = new TreeSurveyor(treeHeightGrid);
 
     const optimizedTimer = new PerformanceTimer('Optimized Implementation');
-
-    const treeSurveyorOptimized = new TreeSurveyor(treeHeightGrid);
 
     let visibleTreeCountOptimized = 0;
 
@@ -183,9 +179,9 @@ export async function puzzle1(input) {
 
     optimizedTimer.stop();
 
-    const simpleTimer = new PerformanceTimer('EZ Implementation');
-
     const treeSurveyorSimple = new TreeSurveyor(treeHeightGrid);
+
+    const simpleTimer = new PerformanceTimer('EZ Implementation');
 
     let visibleTreeCountSimple = 0;
 
