@@ -41,6 +41,8 @@ class TreeSurveyor {
     }
 
     isTreeVisibleFromEdgeEZ(x, y) {
+        if(this.isTreeOnEdge()) return true;
+
         const maybeVisibleTreeHeight = this.getTreeHeight(x, y);
 
         const row = this.getRow(y);
@@ -128,8 +130,6 @@ class TreeSurveyor {
     }
 
     calculateScenicScore(x, y) {
-        if(this.isTreeOnEdge(x, y)) return 0;
-
         const currentTreeHeight = this.getTreeHeight(x, y);
 
         const row = this.getRow(y);
