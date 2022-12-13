@@ -17,3 +17,15 @@ export function splitByDoubleNewline(input) {
 
     return input.split(`${newlineCharacter}${newlineCharacter}`);
 }
+
+export function removeBlankLines(input) {
+    if(typeof input !== 'string') {
+        throw new Error(`Invalid type for param "input" - expected string but got [${typeof text}]`);
+    }
+
+    const newlineCharacter = detectNewline(input);
+
+    const blankLineRegex = new RegExp(`${newlineCharacter}+`, 'g')
+
+    return input.replaceAll(blankLineRegex, `${newlineCharacter}`);
+}
