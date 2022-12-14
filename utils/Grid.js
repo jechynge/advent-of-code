@@ -6,7 +6,7 @@ export default class Grid {
         this.offsetX = options?.offsetX ?? 0;
         this.offsetY = options?.offsetY ?? 0;
 
-        this.validDimensions = `X => [0,${this.width + this.offsetX}] | Y => [0,${this.height + this.offsetY}]`;
+        this.validDimensions = `X => [${this.offsetX},${this.width + this.offsetX}] | Y => [${this.offsetY},${this.height + this.offsetY}]`;
 
         this.grid = new Array(height)
             .fill(undefined)
