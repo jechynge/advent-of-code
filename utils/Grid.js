@@ -1,3 +1,5 @@
+export const GRID_CARDINAL_COORDINATES = ['top', 'right', 'bottom', 'left'];
+
 export default class Grid {
     constructor(width, height, initialValue, options) {
         this.width = width;
@@ -5,6 +7,8 @@ export default class Grid {
 
         this.offsetX = options?.offsetX ?? 0;
         this.offsetY = options?.offsetY ?? 0;
+
+        this.initialValue = typeof initialValue === 'function' ? initialValue() : initialValue;
 
         this.validDimensions = `X => [${this.offsetX},${this.width + this.offsetX}] | Y => [${this.offsetY},${this.height + this.offsetY}]`;
 
@@ -36,18 +40,27 @@ export default class Grid {
         return this.grid[y][x];
     }
 
-    setCell(coordinates, value) {
+    // It is not recommended to call this directly!
+    _setCell(coordinates, value, overwriteNonInitialValue = true) {
+        const [x, y] = this.getOffsetCoordinates(coordinates);
+
+        const _initialValue = typeof this.initialValue === 'function' ? this.initialValue() : this.initialValue;
+
+        if(overwriteNonInitialValue || this.grid[y][x] === _initialValue) {
+            this.grid[y][x] = typeof value === 'function' ? value(coordinates) : value;
+        }
+    }
+
+    setCell(coordinates, value, overwriteNonInitialValue = true) {
         if(!this.isValidCell(coordinates)) {
             throw new Error(`Cell coordinates [${coordinates.join(', ')}] are invalid! ${this.validDimensions}`);
         }
 
-        const [x, y] = this.getOffsetCoordinates(coordinates);
-
-        this.grid[y][x] = value;
+        this._setCell(coordinates, value, overwriteNonInitialValue);
     }
 
     // Range coordinates are inclusive!
-    setRange(from, to, value) {
+    setRange(from, to, value, overwriteNonInitialValue = true) {
         if(!this.isValidCell(from)) {
             throw new Error(`"from" coordinates [${from.join(', ')}] are invalid! ${this.validDimensions}`);
         }
@@ -63,33 +76,111 @@ export default class Grid {
 
         for(let x = startX; x <= endX; x++) {
             for(let y = startY; y <= endY; y++) {
-                const [_x, _y] = this.getOffsetCoordinates([x, y]);
+                this._setCell([x, y], value, overwriteNonInitialValue);
+            }
+        }
+    }
 
-                this.grid[_y][_x] = typeof value === 'function' ? value([x, y]) : value;
+    setManhattanRadius(center, radius, value, overwriteNonInitialValue = true) {
+        const { coordinates, boundaries } = Grid.GetManhattanBoundary(center, radius);
+
+        coordinates.forEach((coordinate, i) => {
+            if(!this.isValidCell(coordinate)) {
+                throw new Error(`${GRID_CARDINAL_COORDINATES[i]}-most coordinate [${coordinate.join(', ')}] is invalid! ${this.validDimensions}`);
+            }
+        });
+
+        const [ top, right, bottom, left ] = boundaries;
+
+        const startY = top;
+        const endY = bottom;
+
+        for(let y = startY; y <= endY; y++) {
+
+            const startX = left + Math.abs(center[1] - y);
+            const endX = right - Math.abs(center[1] - y);
+
+            for(let x = startX; x <= endX; x++) {
+                this._setCell([x, y], value, overwriteNonInitialValue);
             }
         }
     }
 
     getRow(y) {
-        const [, offsetY] = this.getOffsetCoordinates(coordinates);
+        const offsetY = y - this.offsetY;
+
+        if(offsetY < 0 || offsetY > this.grid.length - 1) {
+            throw new Error(`Row at ${y} is out of bounds! ${this.validDimensions}`);
+        }
+
         return this.grid[offsetY];
     }
 
     getColumn(x) {
-        const [offsetX] = this.getOffsetCoordinates(coordinates);
+        const offsetX = x - this.offsetX;
+
+        if(offsetX < 0 || offsetX > this.grid[0].length - 1) {
+            throw new Error(`Column at ${x} is out of bounds! ${this.validDimensions}`);
+        }
+
         return this.grid.map(row => row[offsetX]);
     }
 
     print(emptyCellValue = '.') {
-        const padLength = `${this.height + this.offsetY}`.length;
-        this.grid.forEach((row, i) => console.log(i.toString().padEnd(padLength + 1), row.map(cell => cell ?? emptyCellValue).join('')));
+
+        // const generateColumn = (div, mod) => this.grid[0].reduce((accum, value, i) => {
+        //     const rem = Math.ceil((i + this.offsetX) / div);
+        //     return rem % mod === 0 ? accum + rem.toString() : ' '
+        // }, '');
+
+        // const tens = generateColumn(100, 10);
+        const fives = this.grid[0].reduce((accum, value, i) => {
+            const x = Math.abs(i + this.offsetX);
+            return x % 5 === 0 ? accum + (x % 10).toString() : accum + ' '
+        }, '');
+
+        const tens = this.grid[0].reduce((accum, value, i) => {
+            const x = Math.abs(i + this.offsetX);
+            return Math.abs(x) >= 10 && x % 5 === 0 ? accum + Math.floor(x / 10).toString() : accum + ' '
+        }, '');
+
+        const padR = `${this.height + this.offsetY}`.length;
+        const padL = this.offsetY < 0 ? padR + 1 : padR;
+
+        console.log(''.padEnd(padL), tens);
+        console.log(''.padEnd(padL), fives);
+        
+        this.grid.forEach((row, i) => {
+            const columnNumber = (i + this.offsetY).toString().padEnd(padR + 1).padStart(padL)
+            console.log(columnNumber, row.map(cell => cell ?? emptyCellValue).join(''))
+        });
     }
 
-    static GetManhattanDistance(start, end) {
-        return Math.abs(start[0] - end[0]) + Math.abs(start[1] - end[1]);
+    static GetManhattanDistance(from, to) {
+        return Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]);
     }
 
     static AreCoordinatesEqual(coord1, coord2) {
         return coord1[0] === coord2[0] && coord1[1] === coord2[1];
+    }
+
+    static GetManhattanBoundary(center, radius) {
+        const top = center[1] - radius;
+        const right = center[0] + radius; 
+        const bottom = center[1] + radius;
+        const left = center[0] - radius;
+
+        const topCoordinate = [center[0], top];
+
+        const rightCoordinate = [right, center[1]];
+
+        const bottomCoordinate = [center[0], bottom];
+
+        const leftCoordinate = [left, center[1]];
+
+        return {
+            boundaries: [ top, right, bottom, left ],
+            coordinates: [ topCoordinate, rightCoordinate, bottomCoordinate, leftCoordinate ]
+        }
     }
 }
