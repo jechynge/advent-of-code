@@ -77,11 +77,30 @@ export async function puzzle1(input) {
 ////////////
 
 
+function findNeighborOutOfRange(coordinates, sensors) {
+    for(let i = 0; i < coordinates.length; i++) {
+        const { coordinates: neighbors } = Grid.GetManhattanBoundary(coordinates[i], 1);
+
+        for(let j = 0; j < neighbors.length; j++) {
+            const isAnySensorInRange = sensors.some(({sensorCoordinates, distanceToBeacon}) => {
+                const distanceToSensor = Grid.GetManhattanDistance(neighbors[j], sensorCoordinates);
+                
+                return distanceToSensor <= distanceToBeacon;
+            });
+
+            if(!isAnySensorInRange) {
+                return(neighbors[j]);
+            }
+        }
+    }
+}
+
 export async function puzzle2(input) {
     const timer = new PerformanceTimer('Puzzle 2');
 
     const sensorBoundaries = [];
 
+    // Get the boundaries for each sensor scan
     const sensors = getLinesFromInput(input).map(line => {
         const [sensorX, sensorY, beaconX, beaconY] = /^Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)/.exec(line).slice(1).map(i => parseInt(i));
 
@@ -98,11 +117,6 @@ export async function puzzle2(input) {
 
         sensorBoundaries.push([topRight, bottomRight, bottomLeft, topLeft]);
 
-        // boundaries.top = Math.min(sensorBoundaries[0], boundaries.top);
-        // boundaries.right = Math.max(sensorBoundaries[1], boundaries.right);
-        // boundaries.bottom = Math.max(sensorBoundaries[2], boundaries.bottom);
-        // boundaries.left = Math.min(sensorBoundaries[3], boundaries.left);
-
         return {
             sensorCoordinates,
             beaconCoordinates,
@@ -111,33 +125,36 @@ export async function puzzle2(input) {
     });
 
     const intersections = [];
+    const MAX_SEARCH_RANGE = 4000000;
 
+    // Find where sensor boundaries occur within the search range
     for(let i = 0; i < sensorBoundaries.length; i++) {
-        let boundaryA = sensorBoundaries[i];
-        let boundaryB = sensorBoundaries[i + 1 === sensorBoundaries.length ? 0 : i + 1];
+        const boundaryA = sensorBoundaries[i];
+        for(let j = 0; j < sensorBoundaries.length; j++) {
+            if(i === j) continue;
 
-        boundaryA.forEach(segmentA => {
-            boundaryB.forEach(segmentB => {
-                const intersection = doLinesIntersect(...segmentA, ...segmentB);
+            const boundaryB = sensorBoundaries[j];
 
-                if(intersection && !intersections.find(seenIntersection => Grid.AreCoordinatesEqual(seenIntersection, intersection))) {
-                    intersections.push(intersection);
-                }
+            boundaryA.forEach(segmentA => {
+                boundaryB.forEach(segmentB => {
+                    const intersection = doLinesIntersect(...segmentA, ...segmentB);
+    
+                    if(intersection 
+                        && !intersections.find(seenIntersection => Grid.AreCoordinatesEqual(seenIntersection, intersection))
+                        && intersection.every(i => i >= 0 && i <= MAX_SEARCH_RANGE)) {
+                        intersections.push(intersection);
+                    }
+                });
             });
-        });
-    }
-
-    for(let i = 0; i < intersections.length; i++) {
-        const { coordinates: neighbors } = Grid.GetManhattanBoundary(intersections[i], 1);
-
-        for(let j = 0; j < neighbors.length; j++) {
-            if(sensors.find(({sensorCoordinates, distanceToBeacon}) => distanceToBeacon < Grid.GetManhattanDistance(neighbors[j], sensorCoordinates))) {
-                console.log('found!', neighbors[j]);
-            }
         }
     }
 
+    // Check each neighbor of the intersections to see if it is in range of at least one sensor
+    const outOfRangeCoordinate = findNeighborOutOfRange(intersections, sensors);
+
+    const tuningFrequency = outOfRangeCoordinate[0] * MAX_SEARCH_RANGE + outOfRangeCoordinate[1];
+
     timer.stop();
 
-    printResult(`Part 2 Result`, intersections.length, timer);
+    printResult(`Part 2 Result`, tuningFrequency, timer, `Coordinate is [${outOfRangeCoordinate.join(',')}]`);
 }
