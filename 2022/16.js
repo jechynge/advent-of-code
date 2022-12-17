@@ -3,136 +3,140 @@ import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
+class Volcano {
+    constructor(valves, time, startPosition) {
+        this.valves = valves;
+        this.startPosition = startPosition;
+
+        this.relievedPressure = 0;
+
+        this.timeElapsed = 0;
+        this.totalTime = time;
+
+        this.openedValves = new Set();
+        this.usefulValveNames = [];
+
+        Object.keys(this.valves).forEach((valveName) => {
+            if(this.valves[valveName].flowRate < 1) {
+                this.openedValves.add(valveName);
+            } else {
+                this.usefulValveNames.push(valveName);
+            }
+        });
+
+        this.costs = this.usefulValveNames.reduce((accum, valveName) => ({
+            ...accum,
+            [valveName]: {}
+        }), { [startPosition]: {} });
+
+        for(let i = 0; i < this.usefulValveNames.length; i++) {
+            const to = this.usefulValveNames[i];
+
+            this.costs[startPosition][to] = this.costs[to][startPosition] = this.calculateShortestPathLength(startPosition, to);
+        }
+    
+        for(let i = 0; i < this.usefulValveNames.length; i++) {
+            const from = this.usefulValveNames[i];
+    
+            for(let j = i + 1; j < this.usefulValveNames.length; j++) {
+                const to = this.usefulValveNames[j];
+    
+                this.costs[from][to] = this.costs[to][from] = this.calculateShortestPathLength(from, to);
+            }
+        }
+
+        this.allPaths = [];
+    }
+
+    // Only works for unweighted graphs
+    calculateShortestPathLength(fromValveName, toValveName) {
+        const visited = {};
+        const queue = [{
+            valveName: fromValveName,
+            depth: 0
+        }];
+
+        while(queue.length > 0) {
+            const queueItem = queue.shift();
+
+            visited[queueItem.valveName] = true;
+
+            if(queueItem.valveName === toValveName) {
+                return queueItem.depth;
+            }
+
+            const currentValve = this.valves[queueItem.valveName];
+
+            currentValve.connectedTo.forEach(connectedValveName => {
+                if(visited[connectedValveName]) {
+                    return;
+                }
+
+                queue.push({ valveName: connectedValveName, depth: queueItem.depth + 1});
+            });
+        }
+
+        return -1;
+    }
+
+    calculateAllPaths(currentPath, remainingMinutes) {
+        
+        const unseenValveNames = this.usefulValveNames.filter((valveName) => currentPath.indexOf(valveName) === -1);
+
+        if(unseenValveNames.length === 0) {
+            this.allPaths.push(currentPath);
+        }
+
+        const currentPosition = currentPath[currentPath.length - 1];
+
+        for(let valveName of unseenValveNames) {
+            const minutesToOpenValve = this.costs[currentPosition][valveName] + 1;
+            if(minutesToOpenValve < remainingMinutes) {
+                this.calculateAllPaths([...currentPath, valveName], remainingMinutes - minutesToOpenValve);
+            } else {
+                this.allPaths.push(currentPath);
+            }
+        }
+    }
+}
+
+function calculatePathBenefit(path, volcano) {
+
+    let ticks = 0;
+    let pressureRelievedPerTick = 0;
+    let totalPressureRelieved = 0;
+
+    let currentPosition = volcano.startPosition;
+
+    const tick = (n = 1) => {
+        ticks += n;
+        totalPressureRelieved += n * pressureRelievedPerTick;
+    };
+
+    for(let i = 0; i < path.length; i++) {
+        const nextPosition = path[i];
+        const minutesToOpenNextValve = volcano.costs[currentPosition][nextPosition] + 1;
+        const remainingMinutes = volcano.totalTime - ticks;
+
+        if(minutesToOpenNextValve > remainingMinutes) {
+            tick(remainingMinutes);
+            break;
+        }
+
+        tick(minutesToOpenNextValve);
+        pressureRelievedPerTick += volcano.valves[nextPosition].flowRate;
+        currentPosition = nextPosition;
+    }
+
+    tick(volcano.totalTime - ticks);
+
+    return totalPressureRelieved;
+}
+
 ////////////
 // Part 1 //
 ////////////
 
-
-class Volcano {
-    constructor(valves, time) {
-        this.valves = valves;
-
-        const zeroFlowValveNames = Object.keys(this.valves).filter((valveName) => {
-            return this.valves[valveName].flowRate < 1;
-        });
-
-        this.openedValves = new Set(zeroFlowValveNames);
-
-        this.relievedPressure = 0;
-        this.timeElapsed = 0;
-        this.totalTime = time;
-    }
-
-    areAllValvesOpen() {
-        return this.openedValves.size === Object.keys(this.valves).length;
-    }
-
-    isValveOpen(valveName) {
-        return this.openedValves.has(valveName);
-    }
-
-    openValve(valveName) {
-        if(this.isValveOpen(valveName)) {
-            throw new Error(`Valve ${valveName} is already open!`);
-        }
-
-        this.openedValves.add(valveName);
-    }
-
-    calculateDistanceToClosedValves(valveNamesToConsider, valveNamesSeen, steps = 0, isNext = '') {
-
-        if(this.areAllValvesOpen()) {
-            return null;
-        }
-
-        let possibleMoves = [];
-        const next = new Set();
-        valveNamesSeen = valveNamesSeen ?? new Set();
-
-        const timeToOpen = steps + 1;
-
-        // For all valves this distance away...
-        for(let i = 0; i < valveNamesToConsider.length; i++) {
-            const valveName = valveNamesToConsider[i];
-
-            // Record that we've seen this valve now
-            valveNamesSeen.add(valveName);
-
-            const valve = this.valves[valveName];
-            
-            // For each valve this valve is connected to, if we haven't seen it yet, add it to the next batch to consider
-            valve.connectedTo.forEach((connectedValveName) => {
-                if(!valveNamesSeen.has(connectedValveName)) {
-                    next.add(connectedValveName);
-                }
-            });
-
-            // For the valve we're at, if its already open, skip it as a possible move
-            if(this.isValveOpen(valveName) || isNext === valveName) {
-                continue;
-            }
-
-            let nextStep;
-
-            if(!isNext) {
-                nextStep = this.calculateDistanceToClosedValves([valveName], new Set(), steps, valveName);
-            }
-
-            possibleMoves.push({
-                benefit: valve.flowRate / (timeToOpen * timeToOpen) + (nextStep?.benefit ?? 0),
-                timeToOpen,
-                valveName,
-                steps,
-                likelyNextMove: nextStep?.valveName
-            });
-        }
-
-
-        if(next.size > 0 && timeToOpen + this.timeElapsed < this.totalTime) {
-            possibleMoves = possibleMoves.concat(this.calculateDistanceToClosedValves([...next], valveNamesSeen, steps + 1, isNext)).filter(m => !!m);
-        }
-
-        // if(steps > 0) {
-        //     return possibleMoves;
-        // }
-
-        if(possibleMoves.length === 0) {
-            return null;
-        } else if(possibleMoves.length === 1) {
-            return possibleMoves[0];
-        } else {
-            return possibleMoves.slice(1).reduce((bestMove, possibleMove) => {
-                return possibleMove.benefit > bestMove.benefit ? possibleMove : bestMove;
-            }, possibleMoves[0]);
-        }
-    }
-
-    resolve() {
-        while(this.timeElapsed < this.totalTime) {
-            this.tick();
-        }
-    }
-
-    tick(ticks = 1) {
-        for(let i = 0; i < ticks; i++) {
-            const pressureRelievedThisTick = [...this.openedValves].reduce((accum, valveName) => accum + this.valves[valveName].flowRate, 0);
-
-            const openValves = [...this.openedValves].filter((valveName) => this.valves[valveName].flowRate > 0);
-
-            console.log(`\n== Minute ${this.timeElapsed+1} ==`);
-            if(openValves.length === 0) {
-                console.log('No valves are open.');
-            } else {
-                console.log(`Valves ${openValves.join(', ')} are open, relieving [${pressureRelievedThisTick}] pressure.`);
-            }
-
-            console.log(`Relieved ${this.relievedPressure} pressure so far`);
-
-            this.relievedPressure += pressureRelievedThisTick;
-            this.timeElapsed++;
-        }
-    }
-}
 
 export async function puzzle1(input) {
     const timer = new PerformanceTimer('Puzzle 1');
@@ -155,27 +159,20 @@ export async function puzzle1(input) {
         }
     }, {});
 
-    let position = 'AA';
-    const volcano = new Volcano(valves, 30);
+    const START_POSITION = 'AA';
+    const TOTAL_TIME = 30;
+    const volcano = new Volcano(valves, TOTAL_TIME, START_POSITION);
 
-    while(volcano.timeElapsed < volcano.totalTime) {
-        const nextMove = volcano.calculateDistanceToClosedValves([position]);
+    volcano.calculateAllPaths([START_POSITION], TOTAL_TIME);
 
-        if(!nextMove) {
-            break;
-        }
-
-        position = nextMove.valveName;
-
-        volcano.tick(nextMove.timeToOpen);
-        volcano.openValve(position);
-    }
-
-    volcano.resolve();
+    const bestPath = volcano.allPaths.reduce((bestPathBenefit, currentPath) => {
+        const currentPathBenefit = calculatePathBenefit(currentPath.slice(1), volcano);
+        return Math.max(bestPathBenefit, currentPathBenefit);
+    }, 0);
 
     timer.stop();
 
-    printResult(`Part 1 Result`, volcano.relievedPressure, timer);
+    printResult(`Part 1 Result`, bestPath, timer);
 }
 
 
@@ -183,6 +180,47 @@ export async function puzzle1(input) {
 // Part 2 //
 ////////////
 
+
+//#region utils
+
+function combinations(array) {
+    return new Array(1 << array.length).fill().map(
+      (e1, i) => array.filter((e2, j) => i & 1 << j));
+}
+
+function permute(permutation) {
+    var length = permutation.length,
+        result = [permutation.slice()],
+        c = new Array(length).fill(0),
+        i = 1, k, p;
+  
+    while (i < length) {
+        if (c[i] < i) {
+            k = i % 2 && c[i];
+            p = permutation[i];
+            permutation[i] = permutation[k];
+            permutation[k] = p;
+            ++c[i];
+            i = 1;
+            result.push(permutation.slice());
+        } else {
+            c[i] = 0;
+            ++i;
+        }
+    }
+
+    return result;
+}
+
+function doArraysIntersect(a, b) {
+    for(let i = 0; i < a.length; i++) {
+        for(let j = 0; j < b.length; j++) {
+            if(a[i] === b[j]) return true;
+        }
+    }
+
+    return false;
+}
 
 export async function puzzle2(input) {
     const timer = new PerformanceTimer('Puzzle 2');
@@ -205,88 +243,73 @@ export async function puzzle2(input) {
         }
     }, {});
 
-    const volcano = new Volcano(valves, 26);
-    const startPosition = 'AA';
+    const START_POSITION = 'AA';
+    const TOTAL_TIME = 26;
+    const volcano = new Volcano(valves, TOTAL_TIME, START_POSITION);
 
-    let myMove = volcano.calculateDistanceToClosedValves([startPosition]);
-    let elephantMove = volcano.calculateDistanceToClosedValves([startPosition], new Set([myMove.valveName]));
+    const MIN_PATH_LENGTH = Math.floor(volcano.usefulValveNames.length / 2);
+    const MAX_PATH_LENGTH = Math.ceil(volcano.usefulValveNames.length / 2);
 
-    let myRemainingSteps = myMove.steps;
-    let elephantRemainingSteps = elephantMove.steps;
+    console.log(`Generating all path halves`);
 
-    let myPosition = 'AA';
-    let elephantPosition = 'AA';
+    const pathHalves = combinations(volcano.usefulValveNames)
+        .filter(pathHalf => MIN_PATH_LENGTH <= pathHalf.length && pathHalf.length <= MAX_PATH_LENGTH);
 
-    while(!volcano.areAllValvesOpen() && volcano.timeElapsed < volcano.totalTime) {
-        volcano.tick();
+    const validPathPartitions = [];
 
-        if(!myMove && !elephantMove) {
-            const ifIMoveFirst = volcano.calculateDistanceToClosedValves([myPosition]);
-            const ifElephantMovesSecond = volcano.calculateDistanceToClosedValves([elephantPosition], new Set([ifIMoveFirst?.valveName]));
+    console.log(`Finding all non-overlapping path halves pairs from ${pathHalves.length} paths`);
 
-            const ifElephantMovesFirst = volcano.calculateDistanceToClosedValves([elephantPosition]);
-            const ifIMoveSecond = volcano.calculateDistanceToClosedValves([myPosition], new Set([ifElephantMovesFirst?.valveName]));
+    for(let i = 0; i < pathHalves.length; i++) {
 
-            if(ifIMoveFirst?.benefit ?? 0 + ifElephantMovesSecond?.benefit ?? 0 > ifIMoveSecond?.benefit ?? 0 + ifElephantMovesFirst?.benefit ?? 0) {
-                myMove = ifIMoveFirst;
-                elephantMove = ifElephantMovesSecond;
-            } else {
-                myMove = ifIMoveSecond;
-                elephantMove = ifElephantMovesFirst;
-            }
-
-            myRemainingSteps = myMove?.steps;
-            elephantRemainingSteps = elephantMove?.steps;
+        if(i % Math.floor(pathHalves.length / 10) === 0) {
+            console.log(Math.round(i / pathHalves.length * 100) + '% filtered...');
         }
 
-        if(!myMove) {
-            const avoid = elephantMove ? [elephantMove.valveName] : [];
-            const myNextMove = volcano.calculateDistanceToClosedValves([myPosition], new Set(avoid));
+        const pathA = pathHalves[i];
 
-            if(myNextMove) {
-                myMove = myNextMove;
-                myRemainingSteps = myMove.steps;
-            }
-        }
+        for(let j = i + 1; j < pathHalves.length; j++) {
+            const pathB = pathHalves[j];
 
-        if(!elephantMove) {
-            const avoid = myMove ? [myMove.valveName] : [];
-            const elephantNextMove = volcano.calculateDistanceToClosedValves([elephantPosition], new Set(avoid));
+            if(pathA.length + pathB.length !== volcano.usefulValveNames.length) {
+                continue;
+            }
 
-            if(elephantNextMove) {
-                elephantMove = elephantNextMove;
-                elephantRemainingSteps = elephantMove.steps;
+            if(doArraysIntersect(pathA, pathB)) {
+                continue;
             }
-        }
-        
-        if(myMove) {
-            if(myRemainingSteps === 0) {
-                console.log(`I'm opening valve ${myMove.valveName}`);
-                volcano.openValve(myMove.valveName);
-                myPosition = myMove.valveName;
-                myMove = null;
-            } else {
-                console.log(`I have ${myRemainingSteps} steps to go to reach valve ${myMove.valveName}`);
-                myRemainingSteps--;
-            }
-        }
 
-        if(elephantMove) {
-            if(elephantRemainingSteps === 0) {
-                console.log(`Elephant is opening valve ${elephantMove.valveName}`);
-                volcano.openValve(elephantMove.valveName);
-                elephantPosition = elephantMove.valveName;
-                elephantMove = null;
-            } else {
-                console.log(`Elephant has ${elephantRemainingSteps} steps to go to reach valve ${elephantMove.valveName}`);
-                elephantRemainingSteps--;
-            }
+            validPathPartitions.push([pathA, pathB]);
         }
     }
 
-    volcano.resolve();
+    console.log(`Found ${validPathPartitions.length} valid partitions. Testing all permutations`);
+
+    let bestPath = 0;
+
+    for(let i = 0; i < validPathPartitions.length; i++) {
+
+        if(i % Math.floor(validPathPartitions.length / 20) === 0) {
+            console.log(Math.round(i / validPathPartitions.length * 100) + '% tested...');
+        }
+
+        const [pathA, pathB] = validPathPartitions[i];
+
+        const optimalPathA = permute(pathA).reduce((bestPathBenefit, currentPath) => {
+            const benefit = calculatePathBenefit(currentPath, volcano);
+
+            return Math.max(benefit, bestPathBenefit);
+        }, 0);
+
+        const optimalPathB = permute(pathB).reduce((bestPathBenefit, currentPath) => {
+            const benefit = calculatePathBenefit(currentPath, volcano);
+
+            return Math.max(benefit, bestPathBenefit);
+        }, 0);
+
+        bestPath = Math.max(optimalPathA + optimalPathB, bestPath);
+    }
 
     timer.stop();
 
-    printResult(`Part 2 Result`, volcano.relievedPressure, timer);
+    printResult(`Part 2 Result`, bestPath, timer);
 }
