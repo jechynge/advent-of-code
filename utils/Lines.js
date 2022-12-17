@@ -28,4 +28,4 @@ export function doLinesIntersect([x1, y1], [x2, y2], [x3, y3], [x4, y4]) {
     const y = y1 + ua * (y2 - y1);
 
     return [x, y]
-  }
+}
