@@ -8,7 +8,7 @@ const { day: dayArg, year: yearArg } = minimist(process.argv.slice(2));
 const today = new Date();
 today.setHours(today.getHours() + 2);
 
-const day = 16;//dayArg ?? today.getDate();
+const day = dayArg ?? today.getDate();
 const year = yearArg ?? today.getFullYear();
 
 const paddedDay = day.toString().padStart(2, '0');
