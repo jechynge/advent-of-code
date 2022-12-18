@@ -3,6 +3,49 @@ import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
+//#region utils
+
+function combinations(array) {
+    return new Array(1 << array.length).fill().map(
+      (e1, i) => array.filter((e2, j) => i & 1 << j));
+}
+
+function permute(permutation) {
+    var length = permutation.length,
+        result = [permutation.slice()],
+        c = new Array(length).fill(0),
+        i = 1, k, p;
+  
+    while (i < length) {
+        if (c[i] < i) {
+            k = i % 2 && c[i];
+            p = permutation[i];
+            permutation[i] = permutation[k];
+            permutation[k] = p;
+            ++c[i];
+            i = 1;
+            result.push(permutation.slice());
+        } else {
+            c[i] = 0;
+            ++i;
+        }
+    }
+
+    return result;
+}
+
+function doArraysIntersect(a, b) {
+    for(let i = 0; i < a.length; i++) {
+        for(let j = 0; j < b.length; j++) {
+            if(a[i] === b[j]) return true;
+        }
+    }
+
+    return false;
+}
+
+//#endregion
+
 class Volcano {
     constructor(valves, time, startPosition) {
         this.valves = valves;
@@ -77,6 +120,34 @@ class Volcano {
         }
 
         return -1;
+    }
+
+    pathSubset(excludedValveNames) {
+        let paths = [];
+
+        const calculatePathsFrom = (currentPath, remainingMinutes) => {
+        
+            const unseenValveNames = this.usefulValveNames.filter((valveName) => currentPath.indexOf(valveName) === -1 && excludedValveNames.indexOf(valveName) === -1);
+    
+            if(unseenValveNames.length === 0) {
+                paths.push(currentPath);
+            }
+    
+            const currentPosition = currentPath[currentPath.length - 1];
+    
+            for(let valveName of unseenValveNames) {
+                const minutesToOpenValve = this.costs[currentPosition][valveName] + 1;
+                if(minutesToOpenValve < remainingMinutes) {
+                    calculatePathsFrom([...currentPath, valveName], remainingMinutes - minutesToOpenValve);
+                } else {
+                    paths.push(currentPath);
+                }
+            }
+        };
+
+        calculatePathsFrom([this.startPosition], this.totalTime);
+
+        return paths;
     }
 
     calculateAllPaths(currentPath, remainingMinutes) {
@@ -163,9 +234,9 @@ export async function puzzle1(input) {
     const TOTAL_TIME = 30;
     const volcano = new Volcano(valves, TOTAL_TIME, START_POSITION);
 
-    volcano.calculateAllPaths([START_POSITION], TOTAL_TIME);
+    const paths = volcano.pathSubset([]);
 
-    const bestPath = volcano.allPaths.reduce((bestPathBenefit, currentPath) => {
+    const bestPath = paths.reduce((bestPathBenefit, currentPath) => {
         const currentPathBenefit = calculatePathBenefit(currentPath.slice(1), volcano);
         return Math.max(bestPathBenefit, currentPathBenefit);
     }, 0);
@@ -180,47 +251,6 @@ export async function puzzle1(input) {
 // Part 2 //
 ////////////
 
-
-//#region utils
-
-function combinations(array) {
-    return new Array(1 << array.length).fill().map(
-      (e1, i) => array.filter((e2, j) => i & 1 << j));
-}
-
-function permute(permutation) {
-    var length = permutation.length,
-        result = [permutation.slice()],
-        c = new Array(length).fill(0),
-        i = 1, k, p;
-  
-    while (i < length) {
-        if (c[i] < i) {
-            k = i % 2 && c[i];
-            p = permutation[i];
-            permutation[i] = permutation[k];
-            permutation[k] = p;
-            ++c[i];
-            i = 1;
-            result.push(permutation.slice());
-        } else {
-            c[i] = 0;
-            ++i;
-        }
-    }
-
-    return result;
-}
-
-function doArraysIntersect(a, b) {
-    for(let i = 0; i < a.length; i++) {
-        for(let j = 0; j < b.length; j++) {
-            if(a[i] === b[j]) return true;
-        }
-    }
-
-    return false;
-}
 
 export async function puzzle2(input) {
     const timer = new PerformanceTimer('Puzzle 2');
@@ -261,7 +291,7 @@ export async function puzzle2(input) {
 
     for(let i = 0; i < pathHalves.length; i++) {
 
-        if(i % Math.floor(pathHalves.length / 10) === 0) {
+        if(i % Math.floor(pathHalves.length / 4) === 0) {
             console.log(Math.round(i / pathHalves.length * 100) + '% filtered...');
         }
 
@@ -288,20 +318,20 @@ export async function puzzle2(input) {
 
     for(let i = 0; i < validPathPartitions.length; i++) {
 
-        if(i % Math.floor(validPathPartitions.length / 20) === 0) {
+        if(i % Math.floor(validPathPartitions.length / 5) === 0) {
             console.log(Math.round(i / validPathPartitions.length * 100) + '% tested...');
         }
 
         const [pathA, pathB] = validPathPartitions[i];
 
-        const optimalPathA = permute(pathA).reduce((bestPathBenefit, currentPath) => {
-            const benefit = calculatePathBenefit(currentPath, volcano);
+        const optimalPathA = volcano.pathSubset(pathB).reduce((bestPathBenefit, currentPath) => {
+            const benefit = calculatePathBenefit(currentPath.slice(1), volcano);
 
             return Math.max(benefit, bestPathBenefit);
         }, 0);
-
-        const optimalPathB = permute(pathB).reduce((bestPathBenefit, currentPath) => {
-            const benefit = calculatePathBenefit(currentPath, volcano);
+        
+        const optimalPathB = volcano.pathSubset(pathA).reduce((bestPathBenefit, currentPath) => {
+            const benefit = calculatePathBenefit(currentPath.slice(1), volcano);
 
             return Math.max(benefit, bestPathBenefit);
         }, 0);
