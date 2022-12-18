@@ -50,19 +50,11 @@ class Volcano {
     constructor(valves, time, startPosition) {
         this.valves = valves;
         this.startPosition = startPosition;
-
-        this.relievedPressure = 0;
-
-        this.timeElapsed = 0;
         this.totalTime = time;
-
-        this.openedValves = new Set();
         this.usefulValveNames = [];
 
         Object.keys(this.valves).forEach((valveName) => {
-            if(this.valves[valveName].flowRate < 1) {
-                this.openedValves.add(valveName);
-            } else {
+            if(this.valves[valveName].flowRate > 0) {
                 this.usefulValveNames.push(valveName);
             }
         });
@@ -87,11 +79,9 @@ class Volcano {
                 this.costs[from][to] = this.costs[to][from] = this.calculateShortestPathLength(from, to);
             }
         }
-
-        this.allPaths = [];
     }
 
-    // Only works for unweighted graphs
+    // Only works for graphs with equal edge weights (or unweighted)
     calculateShortestPathLength(fromValveName, toValveName) {
         const visited = {};
         const queue = [{
@@ -122,7 +112,7 @@ class Volcano {
         return -1;
     }
 
-    pathSubset(excludedValveNames) {
+    calculateAllPathsFromStartPosition(excludedValveNames) {
         let paths = [];
 
         const calculatePathsFrom = (currentPath, remainingMinutes) => {
@@ -150,59 +140,40 @@ class Volcano {
         return paths;
     }
 
-    calculateAllPaths(currentPath, remainingMinutes) {
-        
-        const unseenValveNames = this.usefulValveNames.filter((valveName) => currentPath.indexOf(valveName) === -1);
+    calculatePathBenefit(path) {
 
-        if(unseenValveNames.length === 0) {
-            this.allPaths.push(currentPath);
-        }
-
-        const currentPosition = currentPath[currentPath.length - 1];
-
-        for(let valveName of unseenValveNames) {
-            const minutesToOpenValve = this.costs[currentPosition][valveName] + 1;
-            if(minutesToOpenValve < remainingMinutes) {
-                this.calculateAllPaths([...currentPath, valveName], remainingMinutes - minutesToOpenValve);
-            } else {
-                this.allPaths.push(currentPath);
+        let ticks = 0;
+        let pressureRelievedPerTick = 0;
+        let totalPressureRelieved = 0;
+    
+        let currentPosition = path[0];
+    
+        const tick = (n = 1) => {
+            ticks += n;
+            totalPressureRelieved += n * pressureRelievedPerTick;
+        };
+    
+        for(let i = 1; i < path.length; i++) {
+            const nextPosition = path[i];
+            const minutesToOpenNextValve = this.costs[currentPosition][nextPosition] + 1;
+            const remainingMinutes = this.totalTime - ticks;
+    
+            if(minutesToOpenNextValve > remainingMinutes) {
+                tick(remainingMinutes);
+                break;
             }
+    
+            tick(minutesToOpenNextValve);
+            pressureRelievedPerTick += this.valves[nextPosition].flowRate;
+            currentPosition = nextPosition;
         }
+    
+        tick(this.totalTime - ticks);
+    
+        return totalPressureRelieved;
     }
 }
 
-function calculatePathBenefit(path, volcano) {
-
-    let ticks = 0;
-    let pressureRelievedPerTick = 0;
-    let totalPressureRelieved = 0;
-
-    let currentPosition = volcano.startPosition;
-
-    const tick = (n = 1) => {
-        ticks += n;
-        totalPressureRelieved += n * pressureRelievedPerTick;
-    };
-
-    for(let i = 0; i < path.length; i++) {
-        const nextPosition = path[i];
-        const minutesToOpenNextValve = volcano.costs[currentPosition][nextPosition] + 1;
-        const remainingMinutes = volcano.totalTime - ticks;
-
-        if(minutesToOpenNextValve > remainingMinutes) {
-            tick(remainingMinutes);
-            break;
-        }
-
-        tick(minutesToOpenNextValve);
-        pressureRelievedPerTick += volcano.valves[nextPosition].flowRate;
-        currentPosition = nextPosition;
-    }
-
-    tick(volcano.totalTime - ticks);
-
-    return totalPressureRelieved;
-}
 
 ////////////
 // Part 1 //
@@ -234,10 +205,10 @@ export async function puzzle1(input) {
     const TOTAL_TIME = 30;
     const volcano = new Volcano(valves, TOTAL_TIME, START_POSITION);
 
-    const paths = volcano.pathSubset([]);
+    const paths = volcano.calculateAllPathsFromStartPosition([]);
 
     const bestPath = paths.reduce((bestPathBenefit, currentPath) => {
-        const currentPathBenefit = calculatePathBenefit(currentPath.slice(1), volcano);
+        const currentPathBenefit = volcano.calculatePathBenefit(currentPath);
         return Math.max(bestPathBenefit, currentPathBenefit);
     }, 0);
 
@@ -324,14 +295,14 @@ export async function puzzle2(input) {
 
         const [pathA, pathB] = validPathPartitions[i];
 
-        const optimalPathA = volcano.pathSubset(pathB).reduce((bestPathBenefit, currentPath) => {
-            const benefit = calculatePathBenefit(currentPath.slice(1), volcano);
+        const optimalPathA = volcano.calculateAllPathsFromStartPosition(pathB).reduce((bestPathBenefit, currentPath) => {
+            const benefit = volcano.calculatePathBenefit(currentPath);
 
             return Math.max(benefit, bestPathBenefit);
         }, 0);
-        
-        const optimalPathB = volcano.pathSubset(pathA).reduce((bestPathBenefit, currentPath) => {
-            const benefit = calculatePathBenefit(currentPath.slice(1), volcano);
+
+        const optimalPathB = volcano.calculateAllPathsFromStartPosition(pathA).reduce((bestPathBenefit, currentPath) => {
+            const benefit = volcano.calculatePathBenefit(currentPath);
 
             return Math.max(benefit, bestPathBenefit);
         }, 0);
