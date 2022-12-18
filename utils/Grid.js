@@ -10,7 +10,7 @@ export default class Grid {
 
         this.initialValue = typeof initialValue === 'function' ? initialValue() : initialValue;
 
-        this.validDimensions = `X => [${this.offsetX},${this.width + this.offsetX}] | Y => [${this.offsetY},${this.height + this.offsetY}]`;
+        this.validDimensions = `[${this.offsetX} <= X <= ${this.width + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height + this.offsetY}]`;
 
         this.grid = new Array(height)
             .fill(undefined)
@@ -106,6 +106,20 @@ export default class Grid {
         }
     }
 
+    setShape(shapeOrigin, shapeLayout, value, overwriteNonInitialValue = true) {
+        const shapeCoordinates = Grid.GetShapeCoordinates(shapeOrigin, shapeLayout);
+
+        shapeCoordinates.forEach((coordinate) => {
+            if(!this.isValidCell(coordinate)) {
+                throw new Error(`Shape coordinate [${coordinate.join(', ')}] is invalid! ${this.validDimensions}`);
+            }
+        });
+
+        shapeCoordinates.forEach(coordinates => {
+            this._setCell(coordinates, value, overwriteNonInitialValue);
+        });
+    }
+
     getRow(y) {
         const offsetY = y - this.offsetY;
 
@@ -126,14 +140,7 @@ export default class Grid {
         return this.grid.map(row => row[offsetX]);
     }
 
-    print(emptyCellValue = '.') {
-
-        // const generateColumn = (div, mod) => this.grid[0].reduce((accum, value, i) => {
-        //     const rem = Math.ceil((i + this.offsetX) / div);
-        //     return rem % mod === 0 ? accum + rem.toString() : ' '
-        // }, '');
-
-        // const tens = generateColumn(100, 10);
+    print(emptyCellValue = '.', trimY = 0) {
         const fives = this.grid[0].reduce((accum, value, i) => {
             const x = Math.abs(i + this.offsetX);
             return x % 5 === 0 ? accum + (x % 10).toString() : accum + ' '
@@ -150,8 +157,8 @@ export default class Grid {
         console.log(''.padEnd(padL), tens);
         console.log(''.padEnd(padL), fives);
         
-        this.grid.forEach((row, i) => {
-            const columnNumber = (i + this.offsetY).toString().padEnd(padR + 1).padStart(padL)
+        this.grid.slice(trimY).forEach((row, i) => {
+            const columnNumber = (i + trimY + this.offsetY).toString().padEnd(padR + 1).padStart(padL)
             console.log(columnNumber, row.map(cell => cell ?? emptyCellValue).join(''))
         });
     }
@@ -182,5 +189,18 @@ export default class Grid {
             boundaries: [ top, right, bottom, left ],
             coordinates: [ topCoordinate, rightCoordinate, bottomCoordinate, leftCoordinate ]
         }
+    }
+
+    static Transform2DCoordinate(coordinate, ...transforms) {
+        return transforms.reduce((coordinate, transform) => {
+            return [coordinate[0] + transform[0], coordinate[1] + transform[1]];
+        }, coordinate);
+    }
+
+    static GetShapeCoordinates(shapeOrigin, shapeLayout, ...transforms) {
+        return shapeLayout.reduce((coordinates, row, y) => {
+            const rowCoordinates = row.map(x => Grid.Transform2DCoordinate(shapeOrigin, [x,y], ...transforms));
+            return [...coordinates, ...rowCoordinates];
+        }, []);
     }
 }
