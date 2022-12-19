@@ -2,13 +2,10 @@ export default class PerformanceTimer {
     constructor(taskName, options) {
         this.taskName = taskName;
         this.startTimestamp = options?.delayStart ? undefined : Date.now();
-        this.elapsedMilliseconds = -1;
+        this.elapsedMilliseconds = 0;
     }
 
     start() {
-        if(this.startTimestamp !== undefined) {
-            throw new Error(`Timer [${this.taskName}] was already started!`);
-        }
 
         this.startTimestamp = Date.now();
     }
@@ -18,17 +15,13 @@ export default class PerformanceTimer {
             throw new Error(`Timer [${this.taskName}] hasn't been started yet!`);
         }
 
-        if(this.elapsedMilliseconds > -1) {
-            throw new Error(`Timer [${this.taskName}] was already stopped!`);
-        }
-
-        this.elapsedMilliseconds = Date.now() - this.startTimestamp;
+        this.elapsedMilliseconds += Date.now() - this.startTimestamp;
 
         return this.elapsedMilliseconds;
     }
 
     toString(includeName = false) {
-        if(this.startTimestamp === undefined || this.elapsedMilliseconds === -1) {
+        if(this.startTimestamp === undefined || this.elapsedMilliseconds === 0) {
             return this.taskName;
         }
 

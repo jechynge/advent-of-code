@@ -3,6 +3,8 @@ import PerformanceTimer from '../utils/PerformanceTimer.js';
 import Grid from '../utils/Grid.js';
 
 
+const GRID_WIDTH = 7;
+
 const shapes = [
     {
         width: 4,
@@ -119,6 +121,51 @@ const shapes = [
     }
 ];
 
+shapes.forEach(shape => {
+    shape.startingXPositions = [
+        '<<<<',
+    
+        '<<<>',
+        '<<><',
+        '<><<',
+        '><<<',
+    
+        '>>>>',
+    
+        '>>><',
+        '>><>',
+        '><>>',
+        '<>>>',
+    
+        '>><<',
+        '<<>>',
+        '><><',
+        '<><>',
+    
+        '<>><',
+        '><<>'
+    ].reduce((startingXPositions, startingWindPattern) => {
+        const startingXPosition = startingWindPattern.split('').reduce((xPosition, jet) => {
+            if(jet === '<') {
+                if(xPosition > 0) {
+                    return xPosition - 1;
+                }
+            } else {
+                if(xPosition + shape.width < GRID_WIDTH) {
+                    return xPosition + 1;
+                }
+            }
+
+            return xPosition;
+        }, 2);
+
+        return {
+            [startingWindPattern]: startingXPosition,
+            ...startingXPositions
+        };
+    }, {});
+})
+
 
 ////////////
 // Part 1 //
@@ -131,11 +178,6 @@ function clamp(i, min, max) {
 
 // shapeOrigin is the top left coordinate
 function isValidMove(shapeOrigin, hitbox, grid, transform = [0,0]) {
-
-    if(isNaN(parseInt(transform[0])) || isNaN(parseInt(transform[1]))) {
-        throw new Error(`Invalid transform [${transform}]`);
-    }
-
     return Grid.GetShapeCoordinates(shapeOrigin, hitbox, transform).every(nextPosition => {
         return grid.isValidCell(nextPosition) && !grid.getCell(nextPosition);
     });
@@ -174,11 +216,18 @@ export async function puzzle1(input) {
             // deal with the steam jet first
             const { value: jet } = jets.next();
 
-            const horizontalHitbox = jet === '<' ? shape.leftHitbox : shape.rightHitbox;
-            const transform = jet === '<' ? [-1,0] : [1,0];
-            
-            if(isValidMove(shapeOrigin, horizontalHitbox, grid, transform)) {
-                shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, transform);
+            if(jet === '<') {
+                if(shapeOrigin[0] > 0) {
+                    if(isValidMove(shapeOrigin, shape.leftHitbox, grid, [-1,0])) {
+                        shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, [-1,0]);
+                    }
+                }
+            } else {
+                if(shapeOrigin[0] + shape.width < grid.width) {
+                    if(isValidMove(shapeOrigin, shape.rightHitbox, grid, [1,0])) {
+                        shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, [1,0]);
+                    }
+                }
             }
 
             // If we can move down further, move the shape origin down 1 step
@@ -186,7 +235,7 @@ export async function puzzle1(input) {
                 shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, [0,1]);
             } else {
                 // Otherwise, add the shape to the grid and update our highest layer
-                grid.setShape(shapeOrigin, shape.layout, 'o');
+                grid.setShape(shapeOrigin, shape.layout, '#');
                 highestLayer = Math.max(grid.height - shapeOrigin[1], highestLayer);
                 break;
             }
@@ -206,65 +255,117 @@ export async function puzzle1(input) {
 
 export async function puzzle2(input) {
 
-    const timer = new PerformanceTimer('Puzzle 2');
+    const TOTAL_ROCKS = 1000000;
 
-    let grid = new Grid(7, 500);
+
+    const timer = new PerformanceTimer('Puzzle 2');
+    const replaceTimer = new PerformanceTimer('Grid Replacements', { delayStart: true });
+    const collisionTimer = new PerformanceTimer('Collision Calculations', { delayStart: true });
+
+
+    const GRID_HEIGHT = 1000;
+    
+    const TRIM_HEIGHT = GRID_HEIGHT - 20;
+
+    let grid = new Grid(GRID_WIDTH, GRID_HEIGHT);
     const jets = steamJetGenerator(input);
 
-    let highestLayer = 0;
+    let highestShapeOriginY = grid.height;
 
-    for(let i = 0; i < 1000000000000; i++) {
-        if(i % Math.floor(1000000000000 / 100) === 0) {
-            console.log(Math.round(i / 1000000000000 * 100) + '% filtered...');
-        }
+    let gridReplacements = 0;
+    let closestIndex = Infinity;
+
+    for(let i = 0; i < TOTAL_ROCKS; i++) {
+        // if(i % Math.floor(TOTAL_ROCKS / 1000) === 0) {
+        //     console.log((i / TOTAL_ROCKS * 100).toFixed(1) + '% of rocks simulated...');
+        // }
 
         const shape = shapes[i % shapes.length];
 
+        const initialJetPattern = `${jets.next().value}${jets.next().value}${jets.next().value}${jets.next().value}`;
+
         // top left coordinate
-        let shapeOrigin = [ 2, grid.height + grid.offsetY - highestLayer - 1 - 3 - shape.height + 1 ];
+        let shapeOrigin = [ shape.startingXPositions[initialJetPattern], highestShapeOriginY - shape.height ];
 
+        // grid.setShape(shapeOrigin, shape.layout, '@');
+
+        // grid.print('.', TRIM_HEIGHT);
+
+        // grid.setShape(shapeOrigin, shape.layout, undefined);
+
+
+        
         while(true) {
-            // deal with the steam jet first
-            const { value: jet } = jets.next();
-
-            const horizontalHitbox = jet === '<' ? shape.leftHitbox : shape.rightHitbox;
-            const transform = jet === '<' ? [-1,0] : [1,0];
-            
-            if(isValidMove(shapeOrigin, horizontalHitbox, grid, transform)) {
-                shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, transform);
-            }
-
-            // If we can move down further, move the shape origin down 1 step
             if(isValidMove(shapeOrigin, shape.bottomHitbox, grid, [0,1])) {
                 shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, [0,1]);
+
+                // grid.setShape(shapeOrigin, shape.layout, '@');
+
+                // grid.print('.', TRIM_HEIGHT);
+
+                // grid.setShape(shapeOrigin, shape.layout, undefined);
             } else {
                 // Otherwise, add the shape to the grid and update our highest layer
-                grid.setShape(shapeOrigin, shape.layout, 'o');
-                highestLayer = Math.max(grid.height - shapeOrigin[1] + grid.offsetY, highestLayer);
+                grid.setShape(shapeOrigin, shape.layout, '#');
+                highestShapeOriginY = Math.min(shapeOrigin[1], highestShapeOriginY);
                 break;
             }
+            collisionTimer.start();
+
+            const { value: jet } = jets.next();
+
+            if(jet === '<') {
+                if(shapeOrigin[0] > 0) {
+                    if(isValidMove(shapeOrigin, shape.leftHitbox, grid, [-1,0])) {
+                        shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, [-1,0]);
+                    }
+                }
+            } else {
+                if(shapeOrigin[0] + shape.width < grid.width) {
+                    if(isValidMove(shapeOrigin, shape.rightHitbox, grid, [1,0])) {
+                        shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, [1,0]);
+                    }
+                }
+            }
+            
+        collisionTimer.stop();
+
+            // grid.setShape(shapeOrigin, shape.layout, '@');
+
+            // grid.print('.', TRIM_HEIGHT);
+
+            // grid.setShape(shapeOrigin, shape.layout, undefined);
+
+            // If we can move down further, move the shape origin down 1 step
+            
+        }
+
+        // grid.print('.', TRIM_HEIGHT);
+        replaceTimer.start();
+
+        if(highestShapeOriginY - grid.offsetY > 25) {
+            replaceTimer.stop();
+            continue;
         }
 
         const solidRowIndex = grid.grid.findIndex(row => row.every(cell => !!cell));
 
         if(solidRowIndex === -1) {
+            replaceTimer.stop();
             continue;
         }
 
-        let newGrid = new Grid(7, 500, undefined, {
-            offsetY: 500 - solidRowIndex + grid.offsetY
-        });
+        closestIndex = Math.min(closestIndex, solidRowIndex);
+        gridReplacements++;
 
-        newGrid.grid = [...newGrid.grid.slice(0, 500 - solidRowIndex), ...grid.grid.slice(0, solidRowIndex)];
-        // grid.print();
-        grid = newGrid;
-        // grid.print();
-        console.log('replaced grid');
+
+        // console.log(`Found solid row at index ${solidRowIndex}`);
+        grid.translateY(-(grid.height - solidRowIndex));
+
+        replaceTimer.stop();
     }
-
-    const highestShapeLayer = grid.grid.findIndex(row => row.some(cell => !!cell));
 
     timer.stop();
 
-    printResult(`Part 2 Result`, grid.height - highestShapeLayer + grid.offsetY - 2, timer);
+    printResult(`Part 2 Result`, Math.abs(highestShapeOriginY - grid.height), timer, `Grid changed ${gridReplacements} times - smallest index was ${closestIndex}`, replaceTimer.toString(true), collisionTimer.toString(true));
 }

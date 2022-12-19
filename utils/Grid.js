@@ -8,20 +8,53 @@ export default class Grid {
         this.offsetX = options?.offsetX ?? 0;
         this.offsetY = options?.offsetY ?? 0;
 
-        this.initialValue = typeof initialValue === 'function' ? initialValue() : initialValue;
+        this.initialValue = initialValue;
 
-        this.validDimensions = `[${this.offsetX} <= X <= ${this.width + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height + this.offsetY}]`;
+        this.validDimensions = `[${this.offsetX} <= X <= ${this.width - 1 + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height - 1 + this.offsetY}]`;
 
-        this.grid = new Array(height)
+        this.grid = new Array(this.height)
             .fill(undefined)
-            .map(() => new Array(width).fill(typeof initialValue === 'function' ? initialValue() : initialValue));
+            .map(() => new Array(this.width).fill(this.initialValue));
+    }
+
+    // Providing a negative value removes `offset` rows from the bottom and "scrolls" the grid upwards, with the top rows moving to the bottom
+    // A positive will do the opposite - pruning `offset` rows from the top and "scrolling" the grid downwards
+    translateY(offset) {
+
+        if(offset === 0) {
+            return;
+        }
+
+        const missingRows = new Array(Math.abs(offset))
+            .fill(undefined)
+            .map(() => new Array(this.width).fill(this.initialValue));
+
+        if(offset < 0) {
+            this.grid.splice(offset);
+
+            this.grid = missingRows.concat(this.grid);
+        } else {
+            this.grid.splice(0,offset);
+
+            this.grid = this.grid.concat(missingRows);
+        }
+
+        this.offsetY += offset;
+
+        this.validDimensions = `[${this.offsetX} <= X <= ${this.width - 1 + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height - 1 + this.offsetY}]`;
+    }
+
+    // todo bounds checking?
+    calculateRowFromBottom(offsetFromBottom) {
+        return this.height - 1 - offsetFromBottom + this.offsetY;
+    }
+
+    calculateDistanceToBottom(y) {
+        return this.height - 1 - y - this.offsetY;
     }
 
     getOffsetCoordinates(coordinates) {
-        return [
-            coordinates[0] - this.offsetX,
-            coordinates[1] - this.offsetY
-        ];
+        return Grid.Transform2DCoordinate(coordinates, [-this.offsetX, -this.offsetY]);
     }
 
     isValidCell(coordinates) {
@@ -44,10 +77,8 @@ export default class Grid {
     _setCell(coordinates, value, overwriteNonInitialValue = true) {
         const [x, y] = this.getOffsetCoordinates(coordinates);
 
-        const _initialValue = typeof this.initialValue === 'function' ? this.initialValue() : this.initialValue;
-
-        if(overwriteNonInitialValue || this.grid[y][x] === _initialValue) {
-            this.grid[y][x] = typeof value === 'function' ? value(coordinates) : value;
+        if(overwriteNonInitialValue || this.grid[y][x] === this.initialValue) {
+            this.grid[y][x] = value;
         }
     }
 
@@ -123,7 +154,7 @@ export default class Grid {
     getRow(y) {
         const offsetY = y - this.offsetY;
 
-        if(offsetY < 0 || offsetY > this.grid.length - 1) {
+        if(offsetY < 0 || offsetY >= this.height) {
             throw new Error(`Row at ${y} is out of bounds! ${this.validDimensions}`);
         }
 
@@ -133,7 +164,7 @@ export default class Grid {
     getColumn(x) {
         const offsetX = x - this.offsetX;
 
-        if(offsetX < 0 || offsetX > this.grid[0].length - 1) {
+        if(offsetX < 0 || offsetX >= this.width) {
             throw new Error(`Column at ${x} is out of bounds! ${this.validDimensions}`);
         }
 
