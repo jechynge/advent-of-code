@@ -19,7 +19,7 @@ const input = await FetchInput(year, paddedDay);
 
 const { puzzle1, puzzle2 } = await import(`./${year}/${paddedDay}.js`);
 
-// await puzzle1(input);
+await puzzle1(input);
 
 await puzzle2(input);
 

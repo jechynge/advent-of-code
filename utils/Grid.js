@@ -1,4 +1,17 @@
 export const GRID_CARDINAL_COORDINATES = ['top', 'right', 'bottom', 'left'];
+export const GRID_CARDINAL_TRANSFORMS = [
+    [0,-1],
+    [1,0],
+    [0,1],
+    [-1,0]
+];
+
+export const GRID_MOVEMENT = {
+    up: GRID_CARDINAL_TRANSFORMS[0],
+    right: GRID_CARDINAL_TRANSFORMS[1],
+    down: GRID_CARDINAL_TRANSFORMS[2],
+    left: GRID_CARDINAL_TRANSFORMS[3]
+}
 
 export default class Grid {
     constructor(width, height, initialValue, options) {
@@ -9,8 +22,6 @@ export default class Grid {
         this.offsetY = options?.offsetY ?? 0;
 
         this.initialValue = initialValue;
-
-        this.validDimensions = `[${this.offsetX} <= X <= ${this.width - 1 + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height - 1 + this.offsetY}]`;
 
         this.grid = new Array(this.height)
             .fill(undefined)
@@ -40,8 +51,10 @@ export default class Grid {
         }
 
         this.offsetY += offset;
+    }
 
-        this.validDimensions = `[${this.offsetX} <= X <= ${this.width - 1 + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height - 1 + this.offsetY}]`;
+    validDimensions() {
+        return `[${this.offsetX} <= X <= ${this.width - 1 + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height - 1 + this.offsetY}]`;
     }
 
     // todo bounds checking?
@@ -84,7 +97,7 @@ export default class Grid {
 
     setCell(coordinates, value, overwriteNonInitialValue = true) {
         if(!this.isValidCell(coordinates)) {
-            throw new Error(`Cell coordinates [${coordinates.join(', ')}] are invalid! ${this.validDimensions}`);
+            throw new Error(`Cell coordinates [${coordinates.join(', ')}] are invalid! ${this.validDimensions()}`);
         }
 
         this._setCell(coordinates, value, overwriteNonInitialValue);
@@ -93,11 +106,11 @@ export default class Grid {
     // Range coordinates are inclusive!
     setRange(from, to, value, overwriteNonInitialValue = true) {
         if(!this.isValidCell(from)) {
-            throw new Error(`"from" coordinates [${from.join(', ')}] are invalid! ${this.validDimensions}`);
+            throw new Error(`"from" coordinates [${from.join(', ')}] are invalid! ${this.validDimensions()}`);
         }
 
         if(!this.isValidCell(to)) {
-            throw new Error(`"to" coordinates [${to.join(', ')}] are invalid! ${this.validDimensions}`);
+            throw new Error(`"to" coordinates [${to.join(', ')}] are invalid! ${this.validDimensions()}`);
         }
 
         const startX = Math.min(from[0], to[0]);
@@ -117,7 +130,7 @@ export default class Grid {
 
         coordinates.forEach((coordinate, i) => {
             if(!this.isValidCell(coordinate)) {
-                throw new Error(`${GRID_CARDINAL_COORDINATES[i]}-most coordinate [${coordinate.join(', ')}] is invalid! ${this.validDimensions}`);
+                throw new Error(`${GRID_CARDINAL_COORDINATES[i]}-most coordinate [${coordinate.join(', ')}] is invalid! ${this.validDimensions()}`);
             }
         });
 
@@ -142,7 +155,7 @@ export default class Grid {
 
         shapeCoordinates.forEach((coordinate) => {
             if(!this.isValidCell(coordinate)) {
-                throw new Error(`Shape coordinate [${coordinate.join(', ')}] is invalid! ${this.validDimensions}`);
+                throw new Error(`Shape coordinate [${coordinate.join(', ')}] is invalid! ${this.validDimensions()}`);
             }
         });
 
@@ -155,7 +168,7 @@ export default class Grid {
         const offsetY = y - this.offsetY;
 
         if(offsetY < 0 || offsetY >= this.height) {
-            throw new Error(`Row at ${y} is out of bounds! ${this.validDimensions}`);
+            throw new Error(`Row at ${y} is out of bounds! ${this.validDimensions()}`);
         }
 
         return this.grid[offsetY];
@@ -165,13 +178,27 @@ export default class Grid {
         const offsetX = x - this.offsetX;
 
         if(offsetX < 0 || offsetX >= this.width) {
-            throw new Error(`Column at ${x} is out of bounds! ${this.validDimensions}`);
+            throw new Error(`Column at ${x} is out of bounds! ${this.validDimensions()}`);
         }
 
         return this.grid.map(row => row[offsetX]);
     }
 
-    print(emptyCellValue = '.', trimY = 0) {
+    // shapeOrigin is the top left coordinate
+    isValidMove(shapeOrigin, hitbox, transform = [0,0]) {
+        return Grid.GetShapeCoordinates(shapeOrigin, hitbox, transform).every(nextPosition => {
+            return this.isValidCell(nextPosition) && !this.getCell(nextPosition);
+        });
+    }
+
+    print(options) {
+
+        options = {
+            emptyCellValue: '.',
+            trimY: false,
+            ...options
+        };
+
         const fives = this.grid[0].reduce((accum, value, i) => {
             const x = Math.abs(i + this.offsetX);
             return x % 5 === 0 ? accum + (x % 10).toString() : accum + ' '
@@ -182,15 +209,28 @@ export default class Grid {
             return Math.abs(x) >= 10 && x % 5 === 0 ? accum + Math.floor(x / 10).toString() : accum + ' '
         }, '');
 
-        const padR = `${this.height + this.offsetY}`.length;
-        const padL = this.offsetY < 0 ? padR + 1 : padR;
-
-        console.log(''.padEnd(padL), tens);
-        console.log(''.padEnd(padL), fives);
         
-        this.grid.slice(trimY).forEach((row, i) => {
-            const columnNumber = (i + trimY + this.offsetY).toString().padEnd(padR + 1).padStart(padL)
-            console.log(columnNumber, row.map(cell => cell ?? emptyCellValue).join(''))
+        const rowNumbersLength = `${this.height + this.offsetY}`.length + (this.offsetY < 0 ? 1 : 0);
+
+        console.log(''.padEnd(rowNumbersLength), tens);
+        console.log(''.padEnd(rowNumbersLength), fives);
+
+        let trimYFrom = 0;
+        let trimYTo = undefined;
+
+        if(options.trimY) {
+            const minPopulatedRow = this.grid.findIndex(row => row.some(cell => !!cell));
+            const maxPopulatedRow = this.grid.findLastIndex(row => row.some(cell => !!cell));
+
+            if(minPopulatedRow > -1 && maxPopulatedRow > -1) {
+                trimYFrom = minPopulatedRow;
+                trimYTo = maxPopulatedRow + 1;
+            }
+        }
+        
+        this.grid.slice(trimYFrom, trimYTo).forEach((row, i) => {
+            const columnNumber = (i + trimYFrom + this.offsetY).toString().padStart(rowNumbersLength);
+            console.log(columnNumber, row.map(cell => cell ?? options.emptyCellValue).join(''));
         });
     }
 
