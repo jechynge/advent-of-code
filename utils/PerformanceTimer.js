@@ -6,7 +6,6 @@ export default class PerformanceTimer {
     }
 
     start() {
-
         this.startTimestamp = Date.now();
     }
 
