@@ -2,7 +2,7 @@ export default class PerformanceTimer {
     constructor(taskName, options) {
         this.taskName = taskName;
         this.startTimestamp = options?.delayStart ? undefined : Date.now();
-        this.elapsedMilliseconds = 0;
+        this.elapsedMilliseconds = -1;
     }
 
     start() {
@@ -20,7 +20,7 @@ export default class PerformanceTimer {
     }
 
     toString(includeName = false) {
-        if(this.startTimestamp === undefined || this.elapsedMilliseconds === 0) {
+        if(this.startTimestamp === undefined || this.elapsedMilliseconds < 0) {
             return this.taskName;
         }
 
