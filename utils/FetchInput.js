@@ -42,7 +42,7 @@ export default async function FetchInput(year, day) {
         throw new Error(`Received non-success response [${response.status}] and error ${response.statusText}`);
     }
 
-    const input = response.data.trim();
+    const input = response.data.trimEnd();
 
     await writeFile(inputFileLocation, input);
 

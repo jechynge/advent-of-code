@@ -57,15 +57,6 @@ export default class Grid {
         return `[${this.offsetX} <= X <= ${this.width - 1 + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height - 1 + this.offsetY}]`;
     }
 
-    // todo bounds checking?
-    calculateRowFromBottom(offsetFromBottom) {
-        return this.height - 1 - offsetFromBottom + this.offsetY;
-    }
-
-    calculateDistanceToBottom(y) {
-        return this.height - 1 - y - this.offsetY;
-    }
-
     getOffsetCoordinates(coordinates) {
         return Grid.Transform2DCoordinate(coordinates, [-this.offsetX, -this.offsetY]);
     }
