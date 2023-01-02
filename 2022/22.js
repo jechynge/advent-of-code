@@ -1,7 +1,7 @@
 import { printResult } from '../utils/PrettyPrint.js';
 import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput, splitByDoubleNewline } from '../utils/Input.js';
-import Grid, { GRID_CARDINAL_TRANSFORMS, GRID_MOVEMENT } from '../utils/Grid.js';
+import Grid, { GRID_CARDINAL_TRANSFORMS } from '../utils/Grid.js';
 
 
 ////////////

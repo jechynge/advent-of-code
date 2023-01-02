@@ -1,6 +1,6 @@
 import { printResult } from '../utils/PrettyPrint.js';
 import PerformanceTimer from '../utils/PerformanceTimer.js';
-import Grid, { GRID_MOVEMENT } from '../utils/Grid.js';
+import Grid, { GRID_CARDINAL_MOVEMENT } from '../utils/Grid.js';
 
 
 const GRID_WIDTH = 7;
@@ -208,8 +208,8 @@ export async function puzzle1(input) {
         let shapeOrigin = [ shape.startingXPositions[initialJetPattern], highestShapeOriginY - shape.height ];
         
         while(true) {
-            if(grid.isValidMove(shapeOrigin, shape.bottomHitbox, GRID_MOVEMENT.down)) {
-                shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_MOVEMENT.down);
+            if(grid.isValidMove(shapeOrigin, shape.bottomHitbox, GRID_CARDINAL_MOVEMENT.down)) {
+                shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_CARDINAL_MOVEMENT.down);
             } else {
                 // Otherwise, add the shape to the grid and update our highest layer
                 grid.setShape(shapeOrigin, shape.layout, '#');
@@ -218,12 +218,12 @@ export async function puzzle1(input) {
             }
 
             if(jets.next().value === '<') {
-                if(shapeOrigin[0] > 0 && grid.isValidMove(shapeOrigin, shape.leftHitbox, GRID_MOVEMENT.left)) {
-                    shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_MOVEMENT.left);
+                if(shapeOrigin[0] > 0 && grid.isValidMove(shapeOrigin, shape.leftHitbox, GRID_CARDINAL_MOVEMENT.left)) {
+                    shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_CARDINAL_MOVEMENT.left);
                 }
             } else {
-                if(shapeOrigin[0] + shape.width < grid.width && grid.isValidMove(shapeOrigin, shape.rightHitbox, GRID_MOVEMENT.right)) {
-                    shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_MOVEMENT.right);
+                if(shapeOrigin[0] + shape.width < grid.width && grid.isValidMove(shapeOrigin, shape.rightHitbox, GRID_CARDINAL_MOVEMENT.right)) {
+                    shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_CARDINAL_MOVEMENT.right);
                 }
             }
         }
@@ -283,9 +283,9 @@ export async function puzzle2(input) {
         };
         
         while(true) {
-            if(grid.isValidMove(shapeOrigin, shape.bottomHitbox, GRID_MOVEMENT.down)) {
+            if(grid.isValidMove(shapeOrigin, shape.bottomHitbox, GRID_CARDINAL_MOVEMENT.down)) {
                 state.transformY++;
-                shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_MOVEMENT.down);
+                shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_CARDINAL_MOVEMENT.down);
             } else {
                 // Otherwise, add the shape to the grid and update our highest layer
                 grid.setShape(shapeOrigin, shape.layout, '#');
@@ -296,14 +296,14 @@ export async function puzzle2(input) {
             const jet = jets.next().value;
 
             if(jet === '<') {
-                if(shapeOrigin[0] > 0 && grid.isValidMove(shapeOrigin, shape.leftHitbox, GRID_MOVEMENT.left)) {
+                if(shapeOrigin[0] > 0 && grid.isValidMove(shapeOrigin, shape.leftHitbox, GRID_CARDINAL_MOVEMENT.left)) {
                     state.transformX--;
-                    shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_MOVEMENT.left);
+                    shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_CARDINAL_MOVEMENT.left);
                 }
             } else {
-                if(shapeOrigin[0] + shape.width < grid.width && grid.isValidMove(shapeOrigin, shape.rightHitbox, GRID_MOVEMENT.right)) {
+                if(shapeOrigin[0] + shape.width < grid.width && grid.isValidMove(shapeOrigin, shape.rightHitbox, GRID_CARDINAL_MOVEMENT.right)) {
                     state.transformX++;
-                    shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_MOVEMENT.right);
+                    shapeOrigin = Grid.Transform2DCoordinate(shapeOrigin, GRID_CARDINAL_MOVEMENT.right);
                 }
             }
         }

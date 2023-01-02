@@ -6,11 +6,49 @@ export const GRID_CARDINAL_TRANSFORMS = [
     [-1,0]
 ];
 
-export const GRID_MOVEMENT = {
+export const GRID_CARDINAL_MOVEMENT = {
     up: GRID_CARDINAL_TRANSFORMS[0],
     right: GRID_CARDINAL_TRANSFORMS[1],
     down: GRID_CARDINAL_TRANSFORMS[2],
-    left: GRID_CARDINAL_TRANSFORMS[3]
+    left: GRID_CARDINAL_TRANSFORMS[3],
+    north: GRID_CARDINAL_TRANSFORMS[0],
+    east: GRID_CARDINAL_TRANSFORMS[1],
+    south: GRID_CARDINAL_TRANSFORMS[2],
+    west: GRID_CARDINAL_TRANSFORMS[3]
+}
+
+export const GRID_ORTHOGONAL_TRANSFORMS = [
+    [0,-1], // up
+    [1,-1], // up + right
+    [1,0],  // right
+    [1,1],  // right + down
+    [0,1],  // down
+    [-1,1], // down + left
+    [-1,0], // left
+    [-1,-1] // left + up
+];
+
+export const GRID_ORTHOGONAL_MOVEMENT = {
+    up: GRID_ORTHOGONAL_TRANSFORMS[0],
+    up_right: GRID_ORTHOGONAL_TRANSFORMS[1],
+    right_up: GRID_ORTHOGONAL_TRANSFORMS[1],
+    right: GRID_ORTHOGONAL_TRANSFORMS[2],
+    right_down: GRID_ORTHOGONAL_TRANSFORMS[3],
+    down_right: GRID_ORTHOGONAL_TRANSFORMS[3],
+    down: GRID_ORTHOGONAL_TRANSFORMS[4],
+    down_left: GRID_ORTHOGONAL_TRANSFORMS[5],
+    left_down: GRID_ORTHOGONAL_TRANSFORMS[5],
+    left: GRID_ORTHOGONAL_TRANSFORMS[6],
+    left_up: GRID_ORTHOGONAL_TRANSFORMS[7],
+    up_left: GRID_ORTHOGONAL_TRANSFORMS[7],
+    north: GRID_ORTHOGONAL_TRANSFORMS[0],
+    north_east: GRID_ORTHOGONAL_TRANSFORMS[1],
+    east: GRID_ORTHOGONAL_TRANSFORMS[2],
+    south_east: GRID_ORTHOGONAL_TRANSFORMS[3],
+    south: GRID_ORTHOGONAL_TRANSFORMS[4],
+    south_west: GRID_ORTHOGONAL_TRANSFORMS[5],
+    west: GRID_ORTHOGONAL_TRANSFORMS[6],
+    north_west: GRID_ORTHOGONAL_TRANSFORMS[7]
 }
 
 export default class Grid {
@@ -182,6 +220,34 @@ export default class Grid {
         });
     }
 
+    findPopulatedRowBoundary() {
+        const minPopulatedRow = this.grid.findIndex(row => row.some(cell => cell !== this.initialValue));
+        const maxPopulatedRow = this.grid.findLastIndex(row => row.some(cell => cell !== this.initialValue));
+
+        return {
+            minPopulatedRow,
+            maxPopulatedRow
+        };
+    }
+
+    findPopulatedColumnBoundary() {
+        return this.grid.reduce((boundaries, row) => {
+            const min = row.findIndex(cell => cell !== this.initialValue);
+            
+            // If this row doesn't have any non-initial values, bail out
+            if(min === -1) {
+                return boundaries;
+            }
+            
+            const max = row.findLastIndex(cell => cell !== this.initialValue);
+
+            return {
+                minPopulatedColumn: boundaries.minPopulatedColumn === -1 ? min : Math.min(min, boundaries.minPopulatedColumn),
+                maxPopulatedColumn: boundaries.maxPopulatedColumn === -1 ? max : Math.max(max, boundaries.maxPopulatedColumn)
+            }
+        }, { minPopulatedColumn: -1, maxPopulatedColumn: -1});
+    }
+
     print(options) {
 
         options = {
@@ -211,8 +277,7 @@ export default class Grid {
         let trimYTo = options.trimYTo;
 
         if(options.trimY) {
-            const minPopulatedRow = this.grid.findIndex(row => row.some(cell => !!cell));
-            const maxPopulatedRow = this.grid.findLastIndex(row => row.some(cell => !!cell));
+            const { minPopulatedRow, maxPopulatedRow } = this.findPopulatedRowBoundary();
 
             if(minPopulatedRow > -1 && maxPopulatedRow > -1) {
                 trimYFrom = minPopulatedRow;
