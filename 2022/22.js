@@ -148,6 +148,7 @@ export async function puzzle2(input) {
             let nextCoordinates = Grid.Transform2DCoordinate(coordinates, GRID_CARDINAL_TRANSFORMS[transformIndex]);
 
             let nextCell = map.getCell(nextCoordinates);
+            let edgeTransformIndex;
 
             if(!nextCell) {
                 if(transformIndex % 2 === 0) {
@@ -159,31 +160,31 @@ export async function puzzle2(input) {
                         if(transformIndex === 0) {
                             // Moving up
                             nextCoordinates = [50, 50 + horizontalSectorPosition];
-                            transformIndex = 1; // now moving right
+                            edgeTransformIndex = 1; // now moving right
                         } else {
                             // Moving down
                             nextCoordinates = [100 + horizontalSectorPosition, 0];
-                            transformIndex = 2; // still moving down
+                            edgeTransformIndex = 2; // still moving down
                         }
                     } else if(horizontalSector === 1) {
                         if(transformIndex === 0) {
                             // Moving up
                             nextCoordinates = [0, 150 + horizontalSectorPosition];
-                            transformIndex = 1; // now moving right
+                            edgeTransformIndex = 1; // now moving right
                         } else {
                             // Moving down
                             nextCoordinates = [49, 150 + horizontalSectorPosition];
-                            transformIndex = 3; // now moving left
+                            edgeTransformIndex = 3; // now moving left
                         }
                     } else if(horizontalSector === 2) {
                         if(transformIndex === 0) {
                             // Moving up
                             nextCoordinates = [horizontalSectorPosition, 199];
-                            transformIndex = 0; // still moving up
+                            edgeTransformIndex = 0; // still moving up
                         } else {
                             // Moving down
                             nextCoordinates = [99, 50 + horizontalSectorPosition];
-                            transformIndex = 3; // now moving left
+                            edgeTransformIndex = 3; // now moving left
                         }
                     }
                 } else {
@@ -195,41 +196,41 @@ export async function puzzle2(input) {
                         if(transformIndex === 3) {
                             // Moving left
                             nextCoordinates = [0, 149 - verticalSectorPosition];
-                            transformIndex = 1; // now moving right
+                            edgeTransformIndex = 1; // now moving right
                         } else {
                             // Moving right
                             nextCoordinates = [99, 149 - verticalSectorPosition];
-                            transformIndex = 3; // now moving left
+                            edgeTransformIndex = 3; // now moving left
                         }
                     } else if(verticalSector === 1) {
                         if(transformIndex === 3) {
                             // Moving left
                             nextCoordinates = [verticalSectorPosition, 100];
-                            transformIndex = 2; // now moving down
+                            edgeTransformIndex = 2; // now moving down
                         } else {
                             // Moving right
                             nextCoordinates = [100 + verticalSectorPosition, 49];
-                            transformIndex = 0; // now moving up
+                            edgeTransformIndex = 0; // now moving up
                         }
                     } else if(verticalSector === 2) {
                         if(transformIndex === 3) {
                             // Moving left
                             nextCoordinates = [50, 49 - verticalSectorPosition];
-                            transformIndex = 1; // now moving right
+                            edgeTransformIndex = 1; // now moving right
                         } else {
                             // Moving right
                             nextCoordinates = [149, 49 - verticalSectorPosition];
-                            transformIndex = 3; // now moving left
+                            edgeTransformIndex = 3; // now moving left
                         }
                     } else if(verticalSector === 3) {
                         if(transformIndex === 3) {
                             // Moving left
                             nextCoordinates = [50 + verticalSectorPosition, 0];
-                            transformIndex = 2; // now moving down
+                            edgeTransformIndex = 2; // now moving down
                         } else {
                             // Moving right
                             nextCoordinates = [50 + verticalSectorPosition, 149];
-                            transformIndex = 0; // now moving up
+                            edgeTransformIndex = 0; // now moving up
                         }
                     }
                 }
@@ -242,10 +243,7 @@ export async function puzzle2(input) {
             }
 
             coordinates = [...nextCoordinates];
-
-            // map.setCell(coordinates, arrows[transformIndex]);
-            // map.print({emptyCellValue: ' '});
-            // map.setCell(coordinates, '.');
+            transformIndex = edgeTransformIndex ?? transformIndex;
         }
 
         if(turn) {
@@ -263,5 +261,5 @@ export async function puzzle2(input) {
 
     timer.stop();
 
-    printResult(`Part 2 Result`, null, timer);
+    printResult(`Part 2 Result`, answer, timer);
 }

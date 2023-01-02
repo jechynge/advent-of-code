@@ -187,6 +187,7 @@ export default class Grid {
         options = {
             emptyCellValue: '.',
             trimY: false,
+            trimYFrom: 0,
             ...options
         };
 
@@ -197,7 +198,7 @@ export default class Grid {
 
         const tens = this.grid[0].reduce((accum, value, i) => {
             const x = Math.abs(i + this.offsetX);
-            return Math.abs(x) >= 10 && x % 5 === 0 ? accum + Math.floor(x / 10).toString() : accum + ' '
+            return Math.abs(x) >= 10 && x % 5 === 0 ? accum +( Math.floor(x / 10) % 10).toString() : accum + ' '
         }, '');
 
         
@@ -206,8 +207,8 @@ export default class Grid {
         console.log(''.padEnd(rowNumbersLength), tens);
         console.log(''.padEnd(rowNumbersLength), fives);
 
-        let trimYFrom = 0;
-        let trimYTo = undefined;
+        let trimYFrom = options.trimYFrom;
+        let trimYTo = options.trimYTo;
 
         if(options.trimY) {
             const minPopulatedRow = this.grid.findIndex(row => row.some(cell => !!cell));
