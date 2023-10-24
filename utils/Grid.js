@@ -115,6 +115,18 @@ export default class Grid {
         return this.grid[y][x];
     }
 
+    findCell(predicate) {
+        for(let x = 0; x < this.width; x++) {
+            for(let y = 0; y < this.height; y++) {
+                if(predicate(this.grid[y][x])) {
+                    return this.getOffsetCoordinates([x,y]);
+                }
+            }
+        }
+
+        return null;
+    }
+
     // It is not recommended to call this directly!
     _setCell(coordinates, value, overwriteNonInitialValue = true) {
         const [x, y] = this.getOffsetCoordinates(coordinates);
