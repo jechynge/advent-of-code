@@ -4,6 +4,40 @@ import { getLinesFromInput, splitByDoubleNewline } from '../utils/Input.js';
 import Grid from '../utils/Grid.js';
 
 
+const getCardScore = (card, winningCalledNumber) => {
+    let sum = 0;
+
+    for(let x = 0; x < card.width; x++) {
+        for(let y = 0; y < card.height; y++) {
+            const number = card.getCell([x,y]);
+
+            if(number) {
+                sum += number ?? 0;
+            }
+        }
+    }
+
+    return sum * winningCalledNumber;
+};
+
+const populateBingoCard = (cardNumbers) => {
+    const rows = getLinesFromInput(cardNumbers).map(row => row.trim().split(/\s+/).map(s => parseInt(s)));
+
+    const rowCount = rows.length;
+    const columnCount = rows[0].length;
+
+    const card = new Grid(columnCount, rowCount);
+
+    for (let x = 0; x < columnCount; x++) {
+        for (let y = 0; y < rowCount; y++) {
+            card.setCell([x,y], rows[y][x]);
+        }
+    }
+
+    return card;
+};
+
+
 ////////////
 // Part 1 //
 ////////////
@@ -16,22 +50,7 @@ export async function puzzle1(input) {
 
     const calledNumbers = numberInput.split(',').map(s => parseInt(s));
 
-    const cards = cardInputs.map(cardInput => {
-        const rows = getLinesFromInput(cardInput).map(row => row.split(/\s+/).map(s => parseInt(s)));
-
-        const rowCount = rows.length;
-        const columnCount = rows[0].length;
-
-        const card = new Grid(columnCount, rowCount);
-
-        for (let x = 0; x < columnCount; x++) {
-            for (let y = 0; y < rowCount; y++) {
-                card.setCell([x,y], [rows[y][x], false]);
-            }
-        }
-
-        return card;
-    });
+    const cards = cardInputs.map(cardInput => populateBingoCard(cardInput));
 
     let bestCardIndex;
     let winningCalledNumber;
@@ -42,16 +61,16 @@ export async function puzzle1(input) {
         for(let j = 0; j < cards.length; j++) {
             const card = cards[j];
 
-            const coordinates = card.findCell(([number, isCalled]) => number === calledNumber);
+            const coordinates = card.findCell((number) => number === calledNumber);
 
             if(coordinates === null) {
                 continue;
             }
 
-            card.setCell(coordinates, [calledNumber, true]);
+            card.setCell(coordinates, undefined);
 
-            const isRowBingo = card.getRow(coordinates[1]).every(([number, isCalled]) => isCalled);
-            const isColumnBingo = card.getColumn(coordinates[0]).every(([number, isCalled]) => isCalled);
+            const isRowBingo = card.getRow(coordinates[1]).every((number) => number === undefined);
+            const isColumnBingo = card.getColumn(coordinates[0]).every((number) => number === undefined);
 
             if(isRowBingo || isColumnBingo) {
                 bestCardIndex = j;
@@ -65,23 +84,11 @@ export async function puzzle1(input) {
         }
     }
 
-    const bestCard = cards[bestCardIndex];
-
-    let unmarkedSum = 0;
-
-    for(let x = 0; x < bestCard.width; x++) {
-        for(let y = 0; y < bestCard.height; y++) {
-            const [number, isMarked] = bestCard.getCell([x,y]);
-
-            if(!isMarked) {
-                unmarkedSum += number;
-            }
-        }
-    }
+    const cardScore = getCardScore(cards[bestCardIndex], winningCalledNumber);
 
     timer.stop();
 
-    printResult(`Part 1 Result`, unmarkedSum * winningCalledNumber, timer);
+    printResult(`Part 1 Result`, cardScore, timer);
 }
 
 
@@ -93,9 +100,67 @@ export async function puzzle1(input) {
 export async function puzzle2(input) {
     const timer = new PerformanceTimer('Puzzle 2');
 
-    // ...todo
+    const [ numberInput, ...cardInputs ] = splitByDoubleNewline(input);
+
+    const calledNumbers = numberInput.split(',').map(s => parseInt(s));
+
+    const cards = cardInputs.map((cardInput, i) => {
+        const card = populateBingoCard(cardInput);
+
+        card.isBingo = false;
+
+        return card;
+    });
+
+    let worstCardIndex;
+    let winningCalledNumber;
+    let isBingoCount = 0;
+
+    for(let i = 0; i < calledNumbers.length; i++) {
+        const calledNumber = calledNumbers[i];
+
+        for(let j = 0; j < cards.length; j++) {
+            const card = cards[j];
+
+            if(card.isBingo) {
+                continue;
+            }
+
+            const coordinates = card.findCell((number) => number === calledNumber);
+
+            if(coordinates === null) {
+                continue;
+            }
+
+            card.setCell(coordinates, undefined);
+
+            const isRowBingo = card.getRow(coordinates[1]).every((number) => number === undefined);
+            const isColumnBingo = card.getColumn(coordinates[0]).every((number) => number === undefined);
+
+            card.isBingo = isRowBingo || isColumnBingo;
+
+            if(card.isBingo) {
+
+                ++isBingoCount;
+
+                if(isBingoCount === cards.length) {
+                    winningCalledNumber = calledNumber;
+                    worstCardIndex = j;
+                    break;
+                }
+                
+            }
+        }
+
+        if(worstCardIndex !== undefined) {
+            break;
+        }
+
+    }
+
+    const cardScore = getCardScore(cards[worstCardIndex], winningCalledNumber);
 
     timer.stop();
 
-    printResult(`Part 2 Result`, null, timer);
+    printResult(`Part 2 Result`, cardScore, timer);
 }
