@@ -1,3 +1,6 @@
+import CloneDeep from 'lodash.clonedeep';
+import Range from './Range.js';
+
 export const GRID_CARDINAL_COORDINATES = ['top', 'right', 'bottom', 'left'];
 export const GRID_CARDINAL_TRANSFORMS = [
     [0,-1],
@@ -132,7 +135,7 @@ export default class Grid {
         const [x, y] = this.getOffsetCoordinates(coordinates);
 
         if(overwriteNonInitialValue || this.grid[y][x] === this.initialValue) {
-            this.grid[y][x] = value;
+            this.grid[y][x] = typeof value === 'function' ? value(this.grid[y][x]) : value;
         }
     }
 
@@ -163,6 +166,21 @@ export default class Grid {
             for(let y = startY; y <= endY; y++) {
                 this._setCell([x, y], value, overwriteNonInitialValue);
             }
+        }
+    }
+
+    setLine(from, to, value, overwriteNonInitialValue = true) {
+        if(from[0] === to[0] || from[1] === to[1]) {
+            this.setRange(from, to, value, overwriteNonInitialValue);
+        } else if(Math.abs(from[0] - to[0]) === Math.abs(from[1] - to[1])) {
+            const xCoordinates = Range(from[0], to[0]);
+            const yCoordinates = Range(from[1], to[1]);
+
+            for(let i = 0; i < xCoordinates.length; i++) {
+                this.setCell([xCoordinates[i], yCoordinates[i]], value, overwriteNonInitialValue);
+            }
+        } else {
+            throw new Error(`Line defined by "from -> to" must either be vertical, horizontal, or diagonal`);
         }
     }
 
@@ -260,6 +278,21 @@ export default class Grid {
         }, { minPopulatedColumn: -1, maxPopulatedColumn: -1});
     }
 
+    reduce(callback, initialValue) {
+
+        let accum = CloneDeep(initialValue);
+
+        for(let x = 0; x < this.width; x++) {
+            for(let y = 0; y < this.height; y++) {
+                const outerCoordinates = Grid.Transform2DCoordinate([x,y], [this.offsetX, this.offsetY]);
+
+                accum = callback(accum, this.grid[y][x], outerCoordinates);
+            }
+        }
+
+        return accum;
+    }
+
     print(options) {
 
         options = {
@@ -342,5 +375,35 @@ export default class Grid {
             const rowCoordinates = row.map(x => Grid.Transform2DCoordinate(shapeOrigin, [x,y], ...transforms));
             return [...coordinates, ...rowCoordinates];
         }, []);
+    }
+
+    static ParseCoordinateString(coordinateString) {
+        const coordinates = coordinateString.split(',').map(coordinate => parseInt(coordinate));
+
+        if(coordinates.length !== 2 || coordinates.some(isNaN)) {
+            throw new Error(`Invalid coordinate String input: "${coordinateString}"`);
+        }
+
+        return coordinates;
+    }
+
+    static CalculateGridSize(coordinates) {
+        const boundary = coordinates.reduce((accum, [x, y]) => {
+
+            return {
+                minX: Math.min(accum.minX, x), 
+                minY: Math.min(accum.minY, y), 
+                maxX: Math.max(accum.maxX, x), 
+                maxY: Math.max(accum.maxY, y)
+            };
+    
+        }, {minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity});
+
+        return {
+            width: boundary.maxX - boundary.minX + 1,
+            height: boundary.maxY - boundary.minY + 1,
+            offsetX: boundary.minX,
+            offsetY: boundary.minY
+        };
     }
 }
