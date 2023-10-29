@@ -56,8 +56,8 @@ export const GRID_ORTHOGONAL_MOVEMENT = {
 
 export default class Grid {
     constructor(width, height, initialValue, options) {
-        this.width = width;
-        this.height = height;
+        this.width = width + (options?.baseOne ? 1 : 0);
+        this.height = height + (options?.baseOne ? 1 : 0);
 
         this.offsetX = options?.offsetX ?? 0;
         this.offsetY = options?.offsetY ?? 0;
