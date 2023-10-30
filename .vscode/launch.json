@@ -13,7 +13,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/index.js",
-            "args": ["--day", "07", "--year", "2021"]
+            "args": ["--day", "08", "--year", "2021"]
         }
     ]
 }
