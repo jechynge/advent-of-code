@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 import Grid from '../utils/Grid.js';
 import { doLinesIntersect } from '../utils/Lines.js';
@@ -10,8 +8,7 @@ import { doLinesIntersect } from '../utils/Lines.js';
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const boundaries = {
         top: Infinity,
@@ -66,9 +63,8 @@ export async function puzzle1(input) {
 
     const checkedPositions = rowRightBound - rowLeftBound;
 
-    timer.stop();
+    return { answer: checkedPositions };
 
-    printResult(`Part 1 Result`, checkedPositions, timer);
 }
 
 
@@ -95,8 +91,7 @@ function findNeighborOutOfRange(coordinates, sensors) {
     }
 }
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const sensorBoundaries = [];
 
@@ -154,7 +149,6 @@ export async function puzzle2(input) {
 
     const tuningFrequency = outOfRangeCoordinate[0] * MAX_SEARCH_RANGE + outOfRangeCoordinate[1];
 
-    timer.stop();
+    return { answer: tuningFrequency, extraInfo: `Coordinate is [${outOfRangeCoordinate.join(',')}]` };
 
-    printResult(`Part 2 Result`, tuningFrequency, timer, `Coordinate is [${outOfRangeCoordinate.join(',')}]`);
 }

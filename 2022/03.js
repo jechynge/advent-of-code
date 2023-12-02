@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -12,7 +10,8 @@ const itemPriorityValueMap = `${items}${items.toUpperCase()}`.split('').reduce((
 ////////////
 
 
-export async function puzzle1(input) {
+export async function firstPuzzle(input) {
+
     const compartmentCommonItemPriorityValue = getLinesFromInput(input).reduce((accum, items) => {
         const half = items.length / 2;
     
@@ -25,7 +24,8 @@ export async function puzzle1(input) {
         }
     }, 0);
     
-    printResult(`Part 1`, compartmentCommonItemPriorityValue);
+    return { answer: compartmentCommonItemPriorityValue };
+
 }
 
 
@@ -47,42 +47,11 @@ const findCommonItemPriority = (firstElfItems, secondElfItems, thirdElfItems) =>
     }
 };
 
-export async function puzzle2(input) {
+export async function secondPuzzle(input) {
+
     const packs = getLinesFromInput(input);
 
-    //> Unsorted packs
-
-    const unsortedTimer = new PerformanceTimer('Find badge in unsorted packs');
-
-    let unsortedGroupedCommonItemPriorityValue = 0;
-
-    for(let i = 0; i < packs.length; i += 3) {
-        unsortedGroupedCommonItemPriorityValue += findCommonItemPriority(packs[i], packs[i + 1], packs[i + 2]);
-    }
-
-    unsortedTimer.stop();
-
-    printResult(`Part 2 - Unsorted Items`, unsortedGroupedCommonItemPriorityValue, unsortedTimer);
-
-    //> Sorted packs
-
-    const sortedTimer = new PerformanceTimer('Find badge in sorted packs');
-
-    const sortedPacks = packs.map(pack => pack.split('').sort().join(''));
-
-    let sortedGroupedCommonItemPriorityValue = 0;
-
-    for(let i = 0; i < sortedPacks.length; i += 3) {
-        sortedGroupedCommonItemPriorityValue += findCommonItemPriority(sortedPacks[i], sortedPacks[i + 1], sortedPacks[i + 2]);
-    }
-
-    sortedTimer.stop();
-
-    printResult(`Part 2 - Sorted Items`, sortedGroupedCommonItemPriorityValue, sortedTimer);
-
     //> Unique packs
-
-    const uniqueTimer = new PerformanceTimer('Find badge in unique-item packs');
 
     const uniquePacks = packs.map(pack => [...new Set(pack.split(''))].join(''));
 
@@ -92,7 +61,6 @@ export async function puzzle2(input) {
         uniqueGroupedCommonItemPriorityValue += findCommonItemPriority(uniquePacks[i], uniquePacks[i + 1], uniquePacks[i + 2]);
     }
 
-    uniqueTimer.stop();
+    return { answer: uniqueGroupedCommonItemPriorityValue };
 
-    printResult(`Part 2 - Unique Items`, uniqueGroupedCommonItemPriorityValue, uniqueTimer);
 }

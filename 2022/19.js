@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -174,8 +172,7 @@ class Robots {
     }
 }
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const blueprints = getLinesFromInput(input).map(blueprint => new Robots(blueprint));
 
@@ -185,9 +182,8 @@ export async function puzzle1(input) {
         return (quality * (i + 1)) + sum;
     }, 0);
 
-    timer.stop();
+    return { answer: qualitySum };
 
-    printResult(`Part 1 Result`, qualitySum, timer);
 }
 
 
@@ -196,8 +192,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const blueprints = getLinesFromInput(input).slice(0,3).map(blueprint => new Robots(blueprint, 32));
 
@@ -207,7 +202,6 @@ export async function puzzle2(input) {
         return quality * product;
     }, 1);
 
-    timer.stop();
+    return { answer: qualityProduct };
 
-    printResult(`Part 2 Result`, qualityProduct, timer);
 }

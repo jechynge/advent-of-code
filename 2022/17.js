@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import Grid, { GRID_CARDINAL_MOVEMENT } from '../utils/Grid.js';
 
 
@@ -187,8 +185,7 @@ function* steamJetGenerator(input) {
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const TOTAL_ROCKS = 2022;
     const GRID_HEIGHT = TOTAL_ROCKS * 2;
@@ -229,9 +226,8 @@ export async function puzzle1(input) {
         }
     }
 
-    timer.stop();
+    return { answer: grid.height - highestShapeOriginY };
 
-    printResult(`Part 1 Result`, grid.height - highestShapeOriginY, timer);
 }
 
 
@@ -244,8 +240,7 @@ function areStatesEqual(a,b) {
     return !!a && !!b && ['shapeIndex', 'jets', 'transformX', 'transformY'].every(key => a[key] === b[key]);
 }
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const TOTAL_ROCKS = 1000000000000;
 
@@ -335,7 +330,6 @@ export async function puzzle2(input) {
     const projectedCycleCount = Math.floor((TOTAL_ROCKS - startIndex) / cycleLength);
     const projectedHeight = heightAtCycleStart + (heightAddedPerCycle * projectedCycleCount);
 
-    timer.stop();
-
-    printResult(`Part 2 Result`, projectedHeight, timer);
+    return { answer: projectedHeight };
+    
 }

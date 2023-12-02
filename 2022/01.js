@@ -1,5 +1,4 @@
 import { detectNewline } from 'detect-newline';
-import { printResult } from '../utils/PrettyPrint.js';
 
 
 const getCaloriesCarriedPerElf = (input) => {
@@ -15,10 +14,12 @@ const getCaloriesCarriedPerElf = (input) => {
 ////////////
 
 
-export async function puzzle1(input) {
+export async function firstPuzzle(input) {
+
     const caloriesCarriedPerElf = getCaloriesCarriedPerElf(input);
     
-    printResult('Part 1', caloriesCarriedPerElf[0]);
+    return { answer: caloriesCarriedPerElf[0] };
+    
 }
 
 
@@ -27,10 +28,10 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
+export async function secondPuzzle(input) {
+
     const caloriesCarriedPerElf = getCaloriesCarriedPerElf(input);
 
-    const topThreeCalories = caloriesCarriedPerElf.slice(0, 3).reduce((accum, calories) => accum + calories, 0);
+    return { answer: caloriesCarriedPerElf.slice(0, 3).reduce((accum, calories) => accum + calories, 0) };
 
-    printResult('Part 2', topThreeCalories);
 }

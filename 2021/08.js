@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 import _ from 'lodash';
 
@@ -9,8 +7,7 @@ import _ from 'lodash';
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const signals = getLinesFromInput(input).map(s => s.split(' | ').map(s => s.split(' ')));
 
@@ -19,9 +16,8 @@ export async function puzzle1(input) {
         return count + correctLength.length;
     }, 0);
 
-    timer.stop();
+    return { answer: uniqueCount };
 
-    printResult(`Part 1 Result`, uniqueCount, timer);
 }
 
 
@@ -105,8 +101,7 @@ const decodeSignals = (scrambledSignals) => {
 };
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const signals = getLinesFromInput(input).map(s => s.split(' | ').map(s => s.split(' ').map(s => s.split('').sort().join(''))));
 
@@ -120,7 +115,6 @@ export async function puzzle2(input) {
 
     const signalSum = signalNumbers.reduce((sum, signalNumber) => sum + signalNumber, 0);
 
-    timer.stop();
+    return { answer: signalSum };
 
-    printResult(`Part 2 Result`, signalSum, timer);
 }

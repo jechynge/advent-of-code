@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -78,8 +76,7 @@ class Rope {
     }
 }
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const moves = getLinesFromInput(input);
 
@@ -93,9 +90,8 @@ export async function puzzle1(input) {
         }
     });
 
-    timer.stop();
+    return { answer: rope.getUniqueTailPositionCount() };
 
-    printResult(`Part 1 Result`, rope.getUniqueTailPositionCount(), timer);
 }
 
 
@@ -104,8 +100,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const moves = getLinesFromInput(input);
 
@@ -119,7 +114,6 @@ export async function puzzle2(input) {
         }
     });
 
-    timer.stop();
+    return { answer: rope.getUniqueTailPositionCount() };
 
-    printResult(`Part 2 Result`, rope.getUniqueTailPositionCount(), timer);
 }

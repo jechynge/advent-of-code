@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 import Grid from '../utils/Grid.js';
 
@@ -46,9 +44,8 @@ function scanBelow(grid, [ originX, originY ]) {
 }
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
-
+export async function firstPuzzle(input) {
+    
     const minDim = [ Infinity, 0 ]
     const maxDim = [ -Infinity, -Infinity ];
 
@@ -110,9 +107,7 @@ export async function puzzle1(input) {
         sandCount++;
     }
 
-    timer.stop();
-
-    printResult(`Part 1 Result`, sandCount, timer, `Sand is resting between ${minX} and ${maxX}`);
+    return { answer: sandCount, extraInfo: `Sand is resting between ${minX} and ${maxX}` };
 }
 
 
@@ -121,8 +116,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const minDim = [ Infinity, 0 ]
     const maxDim = [ -Infinity, -Infinity ];
@@ -186,7 +180,6 @@ export async function puzzle2(input) {
         }
     }
 
-    timer.stop();
-
-    printResult(`Part 2 Result`, sandCount, timer, `Sand is resting between ${minX} and ${maxX}`);
+    return { answer: sandCount, extraInfo: `Sand is resting between ${minX} and ${maxX}` };
+    
 }

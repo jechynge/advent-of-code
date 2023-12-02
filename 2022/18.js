@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 import Cube, { CUBE_CARDINAL_TRANSFORMS } from '../utils/Cube.js';
 
@@ -9,8 +7,7 @@ import Cube, { CUBE_CARDINAL_TRANSFORMS } from '../utils/Cube.js';
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     let maxDim = 0;
 
@@ -41,9 +38,8 @@ export async function puzzle1(input) {
       return faceCount + dropletFaceCount;
     }, 0);
 
-    timer.stop();
+    return { answer: faceCount };
 
-    printResult(`Part 1 Result`, faceCount, timer);
 }
 
 
@@ -52,8 +48,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     let maxDim = 0;
 
@@ -92,7 +87,6 @@ export async function puzzle2(input) {
       return faceCount + dropletFaceCount;
     }, 0);
 
-    timer.stop();
-
-    printResult(`Part 2 Result`, faceCount, timer);
+    return { answer: faceCount };
+    
 }

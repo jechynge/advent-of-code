@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 const LOWEST_ELEVATION = 'a'.charCodeAt(0);
@@ -100,8 +98,7 @@ const Step = (currentSteps, possibleRemainingSteps, previousCoordinates) => ({
     previousCoordinates
 });
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const heightMap = new HeightMap(input);
     const cellDetails = new Grid(heightMap.width, heightMap.height);
@@ -188,11 +185,10 @@ export async function puzzle1(input) {
         currentCoordinates = uncheckedCoordinates.shift();
     }
 
-    timer.stop();
-
     const finalRoute = cellDetails.getCell(heightMap.destination);
 
-    printResult(`Part 1 Result`, finalRoute.currentSteps, timer);
+    return { answer: finalRoute.currentSteps };
+
 }
 
 
@@ -201,8 +197,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const heightMap = new HeightMap(input);
     const cellDetails = new Grid(heightMap.width, heightMap.height);
@@ -287,9 +282,8 @@ export async function puzzle2(input) {
         currentCoordinates = uncheckedCoordinates.shift();
     }
 
-    timer.stop();
-
     const finalRoute = cellDetails.getCell(currentCoordinates);
 
-    printResult(`Part 2 Result`, finalRoute.currentSteps, timer);
+    return { answer: finalRoute.currentSteps };
+
 }

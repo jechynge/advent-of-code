@@ -1,6 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
-import { getLinesFromInput } from '../utils/Input.js';
 import Grid from '../utils/Grid.js';
 
 
@@ -12,8 +9,7 @@ const FIRST_GENERATION_CYCLE_TIME = GENERATION_CYCLE_TIME + 2;
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const TOTAL_TIME = 80;
 
@@ -52,9 +48,8 @@ export async function puzzle1(input) {
         }
     }
 
-    timer.stop();
+    return { answer: fishCount };
 
-    printResult(`Part 1 Result`, fishCount, timer);
 }
 
 
@@ -63,8 +58,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const TOTAL_TIME = 256;
 
@@ -109,7 +103,6 @@ export async function puzzle2(input) {
 
     const generatedFishCount = factorArray.reduce((count, generated) => count + generated, initialFish.length);
 
-    timer.stop();
+    return { answer: generatedFishCount };
 
-    printResult(`Part 2 Result`, generatedFishCount, timer);
 }

@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -8,10 +6,9 @@ import { getLinesFromInput } from '../utils/Input.js';
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
-    const sum = getLinesFromInput(input).reduce((sum, calibrationValues) => {
+    const answer = getLinesFromInput(input).reduce((sum, calibrationValues) => {
         const digits = [ ...calibrationValues.matchAll(/\d/g) ];
 
         const num = parseInt(`${digits[0]}${digits[digits.length - 1]}`);
@@ -20,9 +17,8 @@ export async function puzzle1(input) {
 
     }, 0);
 
-    timer.stop();
-
-    printResult(`Part 1 Result`, sum, timer);
+    return { answer };
+    
 }
 
 
@@ -30,23 +26,23 @@ export async function puzzle1(input) {
 // Part 2 //
 ////////////
 
-const numberStrings = [
-    'one',
-    'two',
-    'three',
-    'four',
-    'five',
-    'six',
-    'seven',
-    'eight',
-    'nine'
-]
 
+export async function secondPuzzle(input) {
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+    const numberStrings = [
+        'zero',
+        'one',
+        'two',
+        'three',
+        'four',
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'nine'
+    ];
 
-    const sum = getLinesFromInput(input).reduce((sum, calibrationValues) => {
+    const answer = getLinesFromInput(input).reduce((sum, calibrationValues) => {
         let firstDigit, lastDigit;
 
         for(let i = 0; i < calibrationValues.length; i++) {
@@ -60,8 +56,7 @@ export async function puzzle2(input) {
             });
 
             if(numberStringIndex > -1) {
-                firstDigit = numberStringIndex + 1;
-                i += numberStrings[numberStringIndex].length;
+                firstDigit = numberStringIndex;
                 break;
             }
         }
@@ -77,7 +72,7 @@ export async function puzzle2(input) {
             });
 
             if(numberStringIndex > -1) {
-                lastDigit = numberStringIndex + 1;
+                lastDigit = numberStringIndex;
                 break;
             }
         }
@@ -87,8 +82,6 @@ export async function puzzle2(input) {
         return sum + num;
 
     }, 0);
-
-    timer.stop();
-
-    printResult(`Part 2 Result`, sum, timer);
+    
+    return { answer };
 }

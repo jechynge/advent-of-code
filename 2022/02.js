@@ -1,4 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -74,7 +73,8 @@ const playPickerMatrix = {
 ////////////
 
 
-export async function puzzle1(input) {
+export async function firstPuzzle(input) {
+
     const partOneResults = [ 0, 0, 0 ];
 
     const partOnePoints = getLinesFromInput(input).reduce((accum, play) => {
@@ -87,7 +87,8 @@ export async function puzzle1(input) {
         return accum + playPoints[myPlay] + (3 * resolutionModifier);
     }, 0);
 
-    printResult('Part 1', partOnePoints, null, `Wins: ${partOneResults[2]} | Draws: ${partOneResults[1]} | Losses: ${partOneResults[0]}`);
+    return { answer: partOnePoints, extraInfo: `Wins: ${partOneResults[2]} | Draws: ${partOneResults[1]} | Losses: ${partOneResults[0]}` };
+
 }
 
 
@@ -96,7 +97,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
+export async function secondPuzzle(input) {
 
     const partTwoResults = [ 0, 0, 0 ];
 
@@ -112,5 +113,6 @@ export async function puzzle2(input) {
         return accum + playPoints[myPlay] + (3 * resolutionModifier);
     }, 0);
     
-    printResult('Part 2', partTwoPoints, null, `Wins: ${partTwoResults[2]} | Draws: ${partTwoResults[1]} | Losses: ${partTwoResults[0]}`);
+    return { answer: partTwoPoints, extraInfo: `Wins: ${partTwoResults[2]} | Draws: ${partTwoResults[1]} | Losses: ${partTwoResults[0]}` };
+
 }

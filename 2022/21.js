@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -8,8 +6,7 @@ import { getLinesFromInput } from '../utils/Input.js';
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const monkeys = getLinesFromInput(input).reduce((accum, monkey) => {
         const [name, job] = /^(\w+): (.+)$/.exec(monkey).slice(1);
@@ -56,9 +53,8 @@ export async function puzzle1(input) {
         throw new Error(`Unknown operation ${operation}`);
     }, {});
 
-    timer.stop();
+    return { answer: monkeys.root() };
 
-    printResult(`Part 1 Result`, monkeys.root(), timer);
 }
 
 
@@ -67,9 +63,8 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
-
+export async function secondPuzzle(input) {
+    
     // let myNumber = 3910938071092;
     let myNumber;
     let myInitialNumber;
@@ -162,7 +157,6 @@ export async function puzzle2(input) {
         }
     }
 
-    timer.stop();
+    return { answer: myNumber };
 
-    printResult(`Part 2 Result`, myNumber, timer);
 }

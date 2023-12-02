@@ -1,7 +1,7 @@
 import minimist from 'minimist';
 import FetchInput from './utils/FetchInput.js';
-import { printTitle } from './utils/PrettyPrint.js';
-
+import { printTitle, printResult } from './utils/PrettyPrint.js';
+import PerformanceTimer from './utils/PerformanceTimer.js';
 
 const { day: dayArg, year: yearArg } = minimist(process.argv.slice(2));
 
@@ -17,10 +17,22 @@ printTitle(`Advent of Code ${year} -- Day ${paddedDay}`);
 
 const input = await FetchInput(year, paddedDay);
 
-const { puzzle1, puzzle2 } = await import(`./${year}/${paddedDay}.js`);
+const { firstPuzzle, secondPuzzle } = await import(`./${year}/${paddedDay}.js`);
 
-await puzzle1(input);
+const firstPuzzleTimer = new PerformanceTimer('Puzzle 1');
 
-await puzzle2(input);
+const firstPuzzleSolution = await firstPuzzle(input);
+
+firstPuzzleTimer.stop();
+
+printResult(`Part 1 Result`, firstPuzzleSolution.answer, firstPuzzleTimer, firstPuzzleSolution.extraInfo);
+
+const secondPuzzleTimer = new PerformanceTimer('Puzzle 2');
+
+const secondPuzzleResult = await secondPuzzle(input);
+
+secondPuzzleTimer.stop();
+
+printResult(`Part 2 Result`, secondPuzzleResult.answer, secondPuzzleTimer, secondPuzzleResult.extraInfo);
 
 console.log('\nDone!\n');
