@@ -1,5 +1,4 @@
-import { printResult, generateLine } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
+import { generateLine } from '../utils/PrettyPrint.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -74,8 +73,7 @@ class SignalGenerator {
     }
 }
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const instructions = getLinesFromInput(input);
 
@@ -96,13 +94,12 @@ export async function puzzle1(input) {
         }
     });
 
-    timer.stop();
-
     signalGenerator.displayFrame();
 
     const signalSum = [20, 60, 100, 140, 180, 220].reduce((accum, cycle) => accum + signalGenerator.getSignalStrength(cycle), 0);
 
-    printResult(`Part 1 Result`, signalSum, timer, `Signal Generator cycled [${signalGenerator.signalStrengths.length}] times`);
+    return { answer: signalSum, extraInfo: `Signal Generator cycled [${signalGenerator.signalStrengths.length}] times` };
+
 }
 
 
@@ -111,10 +108,8 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
-    timer.stop();
+    return { answer: null };
 
-    printResult(`Part 2 Result`, null, timer);
 }

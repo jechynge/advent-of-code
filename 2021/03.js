@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -8,8 +6,7 @@ import { getLinesFromInput } from '../utils/Input.js';
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const readings = getLinesFromInput(input).map(reading => reading.split('').map(bit => parseInt(bit)));
 
@@ -23,9 +20,8 @@ export async function puzzle1(input) {
     const gamma_int = parseInt(gamma_string, 2);
     const epsilon_int = parseInt(epsilon_string, 2);
 
-    timer.stop();
+    return { answer: gamma_int * epsilon_int };
 
-    printResult(`Part 1 Result`, gamma_int * epsilon_int, timer);
 }
 
 
@@ -42,8 +38,7 @@ const getMostCommonBits = (readings) => {
 };
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const readings = getLinesFromInput(input).map(reading => reading.split('').map(bit => parseInt(bit)));
 
@@ -86,7 +81,6 @@ export async function puzzle2(input) {
     const oxygen_rating_int = parseInt(oxygen_rating_string, 2);
     const co2_rating_int = parseInt(co2_rating_string, 2);
 
-    timer.stop();
+    return { answer: oxygen_rating_int * co2_rating_int };
 
-    printResult(`Part 2 Result`, oxygen_rating_int * co2_rating_int, timer);
 }

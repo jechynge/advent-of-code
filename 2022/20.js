@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -8,8 +6,7 @@ import { getLinesFromInput } from '../utils/Input.js';
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const initialFile = getLinesFromInput(input).map((num, i) => `${num}|${i}`);
     const mixed = [...initialFile];
@@ -36,9 +33,8 @@ export async function puzzle1(input) {
     const b = (zeroIndex + 2000) % mixed.length;
     const c = (zeroIndex + 3000) % mixed.length;
 
-    timer.stop();
+    return { answer: mixed[a] + mixed[b] + mixed[c] };
 
-    printResult(`Part 1 Result`, mixed[a] + mixed[b] + mixed[c], timer);
 }
 
 
@@ -47,8 +43,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const decryptionKey = 811589153;
     const initialFile = getLinesFromInput(input).map((num, i) => `${parseInt(num) * decryptionKey}|${i}`);
@@ -81,7 +76,6 @@ export async function puzzle2(input) {
         return sum + parseInt(mixed[coordinateIndex].split('|')[0]);
     }, 0);
 
-    timer.stop();
-
-    printResult(`Part 2 Result`, coordinateSum, timer);
+    return { answer: coordinateSum };
+    
 }

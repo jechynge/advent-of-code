@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -50,14 +48,12 @@ function toSNAFU(dNum) {
     return sNum;
 }
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const sum = getLinesFromInput(input).map(fromSNAFU).reduce((sum, num) => sum + num, 0);
 
-    timer.stop();
+    return { answer: toSNAFU(sum) };
 
-    printResult(`Part 1 Result`, toSNAFU(sum), timer);
 }
 
 
@@ -66,12 +62,8 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
-    // ...todo
-
-    timer.stop();
-
-    printResult(`Part 2 Result`, null, timer);
+    return { answer: null };
+    
 }

@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -180,8 +178,7 @@ class Volcano {
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const valves = getLinesFromInput(input).reduce((accum, line) => {
         const result = /^Valve (\w{2}) has flow rate=(\d+); tunnels? leads? to valves? (.+)$/.exec(line);
@@ -212,9 +209,8 @@ export async function puzzle1(input) {
         return Math.max(bestPathBenefit, currentPathBenefit);
     }, 0);
 
-    timer.stop();
+    return { answer: bestPath };
 
-    printResult(`Part 1 Result`, bestPath, timer);
 }
 
 
@@ -223,8 +219,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const valves = getLinesFromInput(input).reduce((accum, line) => {
         const result = /^Valve (\w{2}) has flow rate=(\d+); tunnels? leads? to valves? (.+)$/.exec(line);
@@ -310,7 +305,6 @@ export async function puzzle2(input) {
         bestPath = Math.max(optimalPathA + optimalPathB, bestPath);
     }
 
-    timer.stop();
+    return { answer: bestPath };
 
-    printResult(`Part 2 Result`, bestPath, timer);
 }

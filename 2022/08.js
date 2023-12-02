@@ -159,7 +159,7 @@ class TreeSurveyor {
     }
 }
 
-export async function puzzle1(input) {
+export async function firstPuzzle(input) {
 
     const treeHeightGrid = getLinesFromInput(input).map(row => row.split('').map(height => parseInt(height)));
     
@@ -198,6 +198,8 @@ export async function puzzle1(input) {
     printResult(`Part 1 Result - Simple`, visibleTreeCountSimple, simpleTimer, `There were ${treeSurveyorSimple.height * treeSurveyorSimple.width} trees total`);
     printResult(`Part 1 Result - Optimized`, visibleTreeCountOptimized, optimizedTimer, `There were ${treeSurveyorOptimized.height * treeSurveyorOptimized.width} trees total`);
 
+    return { answer: visibleTreeCountSimple };
+
 }
 
 
@@ -206,8 +208,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const treeHeightGrid = getLinesFromInput(input).map(row => row.split('').map(height => parseInt(height)));
 
@@ -230,7 +231,6 @@ export async function puzzle2(input) {
         }
     }
 
-    timer.stop();
-
-    printResult(`Part 2 Result`, maxScenicScore, timer, `Most scenic tree is at [${mostScenicCoordinates.x},${mostScenicCoordinates.y}]`);
+    return { answer: maxScenicScore, extraInfo: `Most scenic tree is at [${mostScenicCoordinates.x},${mostScenicCoordinates.y}]` };
+    
 }

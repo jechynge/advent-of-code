@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "runtimeArgs": [],
-            "name": "Launch Program",
+            "name": "Run Puzzle",
             "skipFiles": [
                 "<node_internals>/**"
             ],

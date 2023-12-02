@@ -1,8 +1,5 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 import Grid from '../utils/Grid.js';
-import Range from '../utils/Range.js';
 
 
 ////////////
@@ -10,8 +7,7 @@ import Range from '../utils/Range.js';
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const ventCoordinates = getLinesFromInput(input).map(line => line.split(' -> ').map(Grid.ParseCoordinateString));
 
@@ -29,9 +25,8 @@ export async function puzzle1(input) {
 
     const overlapCoordinates = map.reduce((count, value) => value > 1 ? ++count : count, 0);
 
-    timer.stop();
+    return { answer: overlapCoordinates };
 
-    printResult(`Part 1 Result`, overlapCoordinates, timer);
 }
 
 
@@ -40,8 +35,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const ventCoordinates = getLinesFromInput(input).map(line => line.split(' -> ').map(Grid.ParseCoordinateString));
 
@@ -57,7 +51,6 @@ export async function puzzle2(input) {
 
     const overlapCoordinates = map.reduce((count, value) => value > 1 ? ++count : count, 0);
 
-    timer.stop();
+    return { answer: overlapCoordinates };
 
-    printResult(`Part 2 Result`, overlapCoordinates, timer);
 }

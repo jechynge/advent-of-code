@@ -26,9 +26,7 @@ const buildInitialStacks = (stackCount, initialStackLayout) => {
 ////////////
 
 
-export async function puzzle1(input) {
-
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const splitBy = detectNewline(input);
 
@@ -44,9 +42,9 @@ export async function puzzle1(input) {
 
     const topLayer = stacks.reduce((accum, stack) => accum + stack[stack.length - 1], '');
 
-    timer.stop();
 
-    printResult(`Part 1 Result`, topLayer, timer);
+    return { answer: topLayer };
+
 }
 
 
@@ -55,9 +53,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const splitBy = detectNewline(input);
 
@@ -73,7 +69,6 @@ export async function puzzle2(input) {
 
     const topLayer = stacks.reduce((accum, stack) => accum + stack[stack.length - 1], '');
 
-    timer.stop();
-
-    printResult(`Part 2 Result`, topLayer, timer);
+    return { answer: topLayer };
+    
 }

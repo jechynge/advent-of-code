@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 import Grid, { GRID_ORTHOGONAL_MOVEMENT, GRID_ORTHOGONAL_TRANSFORMS } from '../utils/Grid.js';
 
@@ -51,8 +49,7 @@ const CONSIDER = [
 const toKey = (coordinates) => `${coordinates[0]},${coordinates[1]}`;
 const fromKey = (coordinateString) => coordinateString.split(',').map(i => parseInt(i));
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const layoutInput = getLinesFromInput(input).map(line => line.split(''));
 
@@ -147,9 +144,8 @@ export async function puzzle1(input) {
     const populatedWidth = maxPopulatedColumn - minPopulatedColumn + 1;
     const populatedHeight = maxPopulatedRow - minPopulatedRow + 1;
 
-    timer.stop();
+    return { answer: (populatedHeight * populatedWidth) - elves.size };
 
-    printResult(`Part 1 Result`, (populatedHeight * populatedWidth) - elves.size, timer);
 }
 
 
@@ -158,12 +154,8 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
-
-    // ...todo
-
-    timer.stop();
-
-    printResult(`Part 2 Result`, null, timer);
+export async function secondPuzzle(input) {
+    
+    return { answer: null };
+    
 }

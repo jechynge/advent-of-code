@@ -1,14 +1,9 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
-import { getLinesFromInput } from '../utils/Input.js';
-
 ////////////
 // Part 1 //
 ////////////
 
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const positions = input.split(',').map(position => parseInt(position)).sort((a, b) => a - b);
 
@@ -28,9 +23,8 @@ export async function puzzle1(input) {
 
     const lowestCost = Math.min(...costs);
 
-    timer.stop();
+    return { answer: lowestCost };
 
-    printResult(`Part 1 Result`, lowestCost, timer);
 }
 
 
@@ -39,8 +33,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const positions = input.split(',').map(position => parseInt(position)).sort((a, b) => a - b);
 
@@ -62,7 +55,6 @@ export async function puzzle2(input) {
 
     const lowestCost = Math.min(...costs);
 
-    timer.stop();
+    return { answer: lowestCost };
 
-    printResult(`Part 2 Result`, lowestCost, timer);
 }

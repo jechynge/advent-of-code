@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput } from '../utils/Input.js';
 
 
@@ -77,8 +75,7 @@ function buildPath(segments) {
     return '/' + segments.join('/');
 }
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const commands = getLinesFromInput(input);
 
@@ -86,9 +83,8 @@ export async function puzzle1(input) {
 
     const smallDirectorySum = Object.keys(directorySizes).reduce((accum, directoryName) => directorySizes[directoryName] <= 100000 ? accum + directorySizes[directoryName] : accum, 0);
 
-    timer.stop();
+    return { answer: smallDirectorySum };
 
-    printResult(`Part 1 Result`, smallDirectorySum, timer);
 }
 
 
@@ -97,8 +93,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const totalSpace = 70000000;
     const freeSpaceNeeded = 30000000;
@@ -124,7 +119,6 @@ export async function puzzle2(input) {
         }
     })
 
-    timer.stop();
+    return { answer: closestDirectorySize, extraInfo: `Delete directory ${closestDirectoryName}` };
 
-    printResult(`Part 2 Result`, closestDirectorySize, timer, `Delete directory ${closestDirectoryName}`);
 }

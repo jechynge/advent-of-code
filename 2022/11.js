@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput, splitByDoubleNewline } from '../utils/Input.js';
 
 
@@ -52,8 +50,8 @@ class Monkey {
     }
 }
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
+    
 
     const monkeys = splitByDoubleNewline(input).map(params => new Monkey(params, 3));
 
@@ -73,9 +71,8 @@ export async function puzzle1(input) {
 
     const monkeyBusiness = monkeys.sort((a, b) => b.inspectedItemCount - a.inspectedItemCount).slice(0,2).reduce((accum, monkey) => accum * monkey.inspectedItemCount, 1);
 
-    timer.stop();
+    return { answer: monkeyBusiness };
 
-    printResult(`Part 1 Result`, monkeyBusiness, timer);
 }
 
 
@@ -84,8 +81,7 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const monkeys = splitByDoubleNewline(input).map(params => new Monkey(params));
 
@@ -107,7 +103,6 @@ export async function puzzle2(input) {
 
     const monkeyBusiness = monkeys.sort((a, b) => b.inspectedItemCount - a.inspectedItemCount).slice(0,2).reduce((accum, monkey) => accum * monkey.inspectedItemCount, 1);
 
-    timer.stop();
+    return { answer: monkeyBusiness };
 
-    printResult(`Part 2 Result`, monkeyBusiness, timer);
 }

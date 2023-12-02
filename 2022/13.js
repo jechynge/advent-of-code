@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput, removeBlankLines, splitByDoubleNewline } from '../utils/Input.js';
 
 
@@ -53,8 +51,7 @@ function arePacketsInOrder(leftPacket, rightPacket) {
     }
 }
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const packets = splitByDoubleNewline(input).map(packetPair => getLinesFromInput(packetPair).map(eval));
 
@@ -62,9 +59,8 @@ export async function puzzle1(input) {
         return arePacketsInOrder(leftPacket, rightPacket) ? accum + index + 1 : accum;
     }, 0);
 
-    timer.stop();
+    return { answer: inOrderIndicesSum };
 
-    printResult(`Part 1 Result`, inOrderIndicesSum, timer);
 }
 
 
@@ -78,8 +74,7 @@ const dividerPackets = [
     [[ 6 ]]
 ];
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
+export async function secondPuzzle(input) {
 
     const packets = getLinesFromInput(removeBlankLines(input)).map(eval).concat(dividerPackets).sort((packetA, packetB) => {
         return arePacketsInOrder(packetA, packetB) ? -1 : 1;
@@ -91,7 +86,6 @@ export async function puzzle2(input) {
         return dividerPacketIndex === -1 ? accum : accum * (dividerPacketIndex + 1);
     }, 1);
 
-    timer.stop();
+    return { answer: decoderKey };
 
-    printResult(`Part 2 Result`, decoderKey, timer);
 }

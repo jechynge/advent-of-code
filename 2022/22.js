@@ -1,5 +1,3 @@
-import { printResult } from '../utils/PrettyPrint.js';
-import PerformanceTimer from '../utils/PerformanceTimer.js';
 import { getLinesFromInput, splitByDoubleNewline } from '../utils/Input.js';
 import Grid, { GRID_CARDINAL_TRANSFORMS } from '../utils/Grid.js';
 
@@ -11,8 +9,7 @@ import Grid, { GRID_CARDINAL_TRANSFORMS } from '../utils/Grid.js';
 
 const arrows = ['^', '>', 'v', '<'];
 
-export async function puzzle1(input) {
-    const timer = new PerformanceTimer('Puzzle 1');
+export async function firstPuzzle(input) {
 
     const [layoutInput, directionInput] = splitByDoubleNewline(input).map(getLinesFromInput);
 
@@ -97,9 +94,8 @@ export async function puzzle1(input) {
 
     const answer = (1000 * row) + (4 * column) + facing;
 
-    timer.stop();
+    return { answer: answer };
 
-    printResult(`Part 1 Result`, answer, timer);
 }
 
 
@@ -108,9 +104,8 @@ export async function puzzle1(input) {
 ////////////
 
 
-export async function puzzle2(input) {
-    const timer = new PerformanceTimer('Puzzle 2');
-
+export async function secondPuzzle(input) {
+    
     const [layoutInput, directionInput] = splitByDoubleNewline(input).map(getLinesFromInput);
 
     const width = layoutInput.reduce((maxWidth, row) => Math.max(maxWidth, row.length), 0);
@@ -259,7 +254,6 @@ export async function puzzle2(input) {
 
     const answer = (1000 * row) + (4 * column) + facing;
 
-    timer.stop();
-
-    printResult(`Part 2 Result`, answer, timer);
+    return { answer: answer };
+    
 }
