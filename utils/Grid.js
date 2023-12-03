@@ -1,5 +1,6 @@
 import CloneDeep from 'lodash.clonedeep';
 import Range from './Range.js';
+import { getLinesFromInput } from './Input.js';
 
 export const GRID_CARDINAL_COORDINATES = ['top', 'right', 'bottom', 'left'];
 export const GRID_CARDINAL_TRANSFORMS = [
@@ -52,6 +53,27 @@ export const GRID_ORTHOGONAL_MOVEMENT = {
     south_west: GRID_ORTHOGONAL_TRANSFORMS[5],
     west: GRID_ORTHOGONAL_TRANSFORMS[6],
     north_west: GRID_ORTHOGONAL_TRANSFORMS[7]
+}
+
+export const constructGridFromInput = (input, splitOn = '', options = {}) => {
+    const rows = getLinesFromInput(input).map((row) => row.split(splitOn));
+
+    const height = rows.length;
+    const width = rows[0].length;
+
+    if(!rows.every((row) => row.length === width)) {
+        throw new Error(`Not all rows are the same length!`);
+    }
+
+    const grid = new Grid(width, height, undefined, options);
+
+    for(let x = 0; x < width; x++) {
+        for(let y = 0; y < height; y++) {
+            grid.setCell([x, y], rows[y][x]);
+        }
+    }
+
+    return grid;
 }
 
 export default class Grid {
@@ -293,6 +315,18 @@ export default class Grid {
         return accum;
     }
 
+    forEach(callback) {
+
+        for(let x = 0; x < this.width; x++) {
+            for(let y = 0; y < this.height; y++) {
+                const outerCoordinates = Grid.Transform2DCoordinate([x,y], [this.offsetX, this.offsetY]);
+
+                callback(this.grid[y][x], outerCoordinates);
+            }
+        }
+
+    }
+
     print(options) {
 
         options = {
@@ -405,5 +439,19 @@ export default class Grid {
             offsetX: boundary.minX,
             offsetY: boundary.minY
         };
+    }
+
+    static IsCoordinateInBox(coordinate, topLeft, bottomRight, edgeInclusive = false) {
+        if(edgeInclusive) {
+            return coordinate[0] >= topLeft[0] &&
+                   coordinate[0] <= bottomRight[0] &&
+                   coordinate[1] >= topLeft[1] &&
+                   coordinate[1] <= bottomRight[1];
+        } else {
+            return coordinate[0] > topLeft[0] &&
+                   coordinate[0] < bottomRight[0] &&
+                   coordinate[1] > topLeft[1] &&
+                   coordinate[1] < bottomRight[1];
+        }
     }
 }
