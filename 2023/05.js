@@ -1,6 +1,4 @@
 import { getLinesFromInput } from '../utils/Input.js';
-import Range from '../utils/Range.js';
-import _ from 'lodash';
 
 const MAP_NAMES = [
     'seed-to-soil',
@@ -20,8 +18,30 @@ const createSeedMap = () => {
             ...seedMap,
             [mapName]: []
         };
-    }, { });
+    }, {
+        [SHORTCUT]: {}
+     });
 };
+
+
+const getLocationNumberForSeed = (seedNumber, seedMap) => {
+
+    if(seedMap[SHORTCUT][seedNumber]) {
+        return seedMap[SHORTCUT][seedNumber];
+    }
+
+    const locationNumber = MAP_NAMES.reduce((num, mapName) => {
+            
+        const [ , , additive ] = seedMap[mapName].find(([ sourceRangeStart, sourceRangeEnd, ]) => sourceRangeStart <= num && num <= sourceRangeEnd) ?? [ null, null, 0 ];
+
+        return num + additive;
+
+    }, seedNumber);
+
+    seedMap[SHORTCUT][seedNumber] = locationNumber;
+
+    return locationNumber;
+}
 
 
 ////////////
@@ -65,13 +85,7 @@ export async function firstPuzzle(input) {
 
     const minimumLocationNumber = seedNumbers.reduce((minimumLocationNumber, seedNumber) => {
 
-        const locationNumber = MAP_NAMES.reduce((num, mapName) => {
-            
-            const [ , , additive ] = seedMap[mapName].find(([ sourceRangeStart, sourceRangeEnd, ]) => sourceRangeStart <= num && num <= sourceRangeEnd) ?? [ null, null, 0 ];
-
-            return num + additive;
-
-        }, seedNumber);
+        const locationNumber = getLocationNumberForSeed(seedNumber, seedMap);
 
         return Math.min(locationNumber, minimumLocationNumber);
 
@@ -85,17 +99,6 @@ export async function firstPuzzle(input) {
 ////////////
 // Part 2 //
 ////////////
-
-
-const getLocationNumberForSeed = (seedNumber, seedMap) => {
-    return MAP_NAMES.reduce((num, mapName) => {
-            
-        const [ , , additive ] = seedMap[mapName].find(([ sourceRangeStart, sourceRangeEnd, ]) => sourceRangeStart <= num && num <= sourceRangeEnd) ?? [ null, null, 0 ];
-
-        return num + additive;
-
-    }, seedNumber);
-}
 
 
 export async function secondPuzzle(input) {
@@ -162,13 +165,14 @@ export async function secondPuzzle(input) {
             // Should be 1 if the sequence is continuing
             const nextLocationDiff = nextLocationNumber - upperLocationNumber;
 
-            // If the transform deltas were equal
+            // If the transform deltas were equal, we're still in a sequence...
             if(lowerBoundDiff === upperBoundDiff) {
 
-                // And the next location was a continuation, keep searching
+                // And if the next location was a continuation, keep searching
                 if(nextLocationDiff === 1) {
                     i += increment;
                 } else {
+                    // Otherwise, we've found a boundary - start searching from the next boundary
                     seedNumberBounds.push([ nextSeedNumber, nextLocationNumber ]);
                     i++;
                     increment = Math.max(1, seedNumberRange - i);
@@ -178,10 +182,11 @@ export async function secondPuzzle(input) {
                 
             }
 
+            // Otherwise, we've overshot the end of this sequence - rewind and halve the increment
             if(increment > 1) {
                 i -= increment;
 
-                increment = Math.max(1, Math.floor(increment / 2));
+                increment = Math.floor(increment / 2);
             }
 
             i += increment;
@@ -194,8 +199,6 @@ export async function secondPuzzle(input) {
 
         minimumLocationNumber = Math.min(minimumLocationNumber, minLocation);
     }
-
-    
 
 
     return { answer: minimumLocationNumber, extraInfo: undefined };
