@@ -132,8 +132,6 @@ export async function secondPuzzle(input) {
 
     }
 
-    const DEFAULT_INCREMENT = 1000000;
-
     let minimumLocationNumber = Infinity;
 
     for(let s = 0; s < seedNumbers.length; s += 2) {
@@ -142,9 +140,9 @@ export async function secondPuzzle(input) {
 
         const seedNumberBounds = [ [ seedNumberStart, getLocationNumberForSeed(seedNumberStart, seedMap) ] ];
 
-        let i = 0, increment = DEFAULT_INCREMENT;
+        let i = seedNumberRange, increment = seedNumberRange;
 
-        while(i < seedNumberRange) {
+        while(i <= seedNumberRange) {
             const [lowerSeedNumber, lowerLocationNumber] = seedNumberBounds[ seedNumberBounds.length - 1 ];
 
             // The transform delta between seed and location number
@@ -172,8 +170,8 @@ export async function secondPuzzle(input) {
                     i += increment;
                 } else {
                     seedNumberBounds.push([ nextSeedNumber, nextLocationNumber ]);
-                    increment = DEFAULT_INCREMENT;
                     i++;
+                    increment = Math.max(1, seedNumberRange - i);
                 }
 
                 continue;
