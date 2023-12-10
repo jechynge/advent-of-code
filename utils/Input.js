@@ -30,6 +30,30 @@ export function removeBlankLines(input) {
     return input.replaceAll(blankLineRegex, `${newlineCharacter}`);
 }
 
+export function splitAndParseIntsFromLine(line, delimiter = ' ') {
+    if(typeof line !== 'string') {
+        throw new Error(`Invalid type for param "line" - expected string but got [${typeof line}]`);
+    }
+
+    if(typeof delimiter !== 'string') {
+        throw new Error(`Invalid type for param "delimiter" - expected string but got [${typeof delimiter}]`);
+    }
+
+    if(delimiter.length !== 1) {
+        throw new Error(`Invalid type value param "delimiter" - must be a single character.`);
+    }
+
+    return line.split(delimiter).map((stringInt, i) => {
+        const numberInt = parseInt(stringInt);
+
+        if(isNaN(numberInt)) {
+            throw new Error(`Error parsing integer "${stringInt}" - got NaN! [Index: ${i}]`);
+        }
+
+        return numberInt;
+    });
+}
+
 export function getFixedWidthDataFromLine(line, width) {
     if(typeof line !== 'string') {
         throw new Error(`Invalid type for param "line" - expected string but got [${typeof line}]`);
