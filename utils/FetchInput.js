@@ -3,9 +3,9 @@ import { existsSync } from 'node:fs';
 import { open, writeFile } from 'node:fs/promises';
 
 
-export default async function FetchInput(year, day) {
+export default async function FetchInput(year, day, loadTest = false) {
 
-    const inputFileLocation = `./${year}/input/${day}.txt`;
+    const inputFileLocation = `./${year}/input/${day}${loadTest ? 'test' : ''}.txt`;
 
     // check for an existing file first
     if(existsSync(inputFileLocation)) {
@@ -16,6 +16,10 @@ export default async function FetchInput(year, day) {
         file.close();
 
         return input;
+    }
+
+    if(loadTest) {
+        throw new Error(`No test data found at ${inputFileLocation}`);
     }
 
     const sessionFile = await open(`./session.txt`);
