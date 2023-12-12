@@ -125,6 +125,21 @@ export class Grid {
         this.offsetY += offset;
     }
 
+    addRow(y, value = this.initialValue) {
+        const newRow = new Array(this.width).fill(null).map((_value, x) => typeof value === 'function' ? value(this.getOffsetCoordinates([x, y])) : value);
+
+        this.grid.splice(y, 0, newRow);
+        ++this.height;
+    }
+
+    addColumn(x, value = this.initialValue) {
+        this.grid.forEach((row, y) => {
+            row.splice(x, 0, typeof value === 'function' ? value(this.getOffsetCoordinates([x, y])) : value);
+        });
+
+        ++this.width;
+    }
+
     validDimensions() {
         return `[${this.offsetX} <= X <= ${this.width - 1 + this.offsetX}] | [${this.offsetY} <= Y <= ${this.height - 1 + this.offsetY}]`;
     }
@@ -378,6 +393,19 @@ export class Grid {
             const columnNumber = (i + trimYFrom + this.offsetY).toString().padStart(rowNumbersLength);
             console.log(columnNumber, row.map(cell => options.mapValue(cell ?? options.emptyCellValue)).join(''));
         });
+    }
+
+    static GetBoundingBoxForCoordinatePair([ x1, y1 ], [ x2, y2 ]) {
+        const top = Math.min(y1, y2);
+        const left = Math.min(x1, x2);
+
+        const right = Math.max(x1, x2);
+        const bottom = Math.max(y1, y2);
+
+        return {
+            topLeft: [ left, top ],
+            bottomRight: [ right, bottom ]
+        };
     }
 
     static GetManhattanDistance(from, to) {
