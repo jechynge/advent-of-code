@@ -58,7 +58,7 @@ export async function firstPuzzle(input) {
         for(let j = 0; j < cards.length; j++) {
             const card = cards[j];
 
-            const coordinates = card.findCell((number) => number === calledNumber);
+            const coordinates = card.findCellCoordinates((number) => number === calledNumber);
 
             if(coordinates === null) {
                 continue;
@@ -121,7 +121,7 @@ export async function secondPuzzle(input) {
                 continue;
             }
 
-            const coordinates = card.findCell((number) => number === calledNumber);
+            const coordinates = card.findCellCoordinates((number) => number === calledNumber);
 
             if(coordinates === null) {
                 continue;

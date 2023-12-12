@@ -1,6 +1,7 @@
 import CloneDeep from 'lodash.clonedeep';
 import Range from './Range.js';
 import { getLinesFromInput } from './Input.js';
+import _ from 'lodash';
 
 export const GRID_CARDINAL_COORDINATES = ['top', 'right', 'bottom', 'left'];
 export const GRID_CARDINAL_TRANSFORMS = [
@@ -8,6 +9,10 @@ export const GRID_CARDINAL_TRANSFORMS = [
     [1,0],
     [0,1],
     [-1,0]
+];
+
+export const GRID_CARDINAL_MOVEMENT_NAMES = [
+    'up', 'right', 'down', 'left'
 ];
 
 export const GRID_CARDINAL_MOVEMENT = {
@@ -30,6 +35,10 @@ export const GRID_ORTHOGONAL_TRANSFORMS = [
     [-1,1], // down + left
     [-1,0], // left
     [-1,-1] // left + up
+];
+
+export const GRID_ORTHOGONAL_MOVEMENT_NAMES = [
+    'up', 'up_right', 'right', 'down_right', 'down', 'down_left', 'left', 'up_left'
 ];
 
 export const GRID_ORTHOGONAL_MOVEMENT = {
@@ -55,8 +64,8 @@ export const GRID_ORTHOGONAL_MOVEMENT = {
     north_west: GRID_ORTHOGONAL_TRANSFORMS[7]
 }
 
-export const constructGridFromInput = (input, splitOn = '', options = {}) => {
-    const rows = getLinesFromInput(input).map((row) => row.split(splitOn));
+export const constructGridFromInput = (input, splitOn = '', mapFunction = x => x, options = {}) => {
+    const rows = getLinesFromInput(input).map((row) => row.split(splitOn).map(mapFunction));
 
     const height = rows.length;
     const width = rows[0].length;
@@ -76,7 +85,7 @@ export const constructGridFromInput = (input, splitOn = '', options = {}) => {
     return grid;
 }
 
-export default class Grid {
+export class Grid {
     constructor(width, height, initialValue, options) {
         this.width = width + (options?.baseOne ? 1 : 0);
         this.height = height + (options?.baseOne ? 1 : 0);
@@ -140,7 +149,7 @@ export default class Grid {
         return this.grid[y][x];
     }
 
-    findCell(predicate) {
+    findCellCoordinates(predicate) {
         for(let x = 0; x < this.width; x++) {
             for(let y = 0; y < this.height; y++) {
                 if(predicate(this.grid[y][x])) {
@@ -333,6 +342,7 @@ export default class Grid {
             emptyCellValue: '.',
             trimY: false,
             trimYFrom: 0,
+            mapValue: x => x,
             ...options
         };
 
@@ -366,7 +376,7 @@ export default class Grid {
         
         this.grid.slice(trimYFrom, trimYTo).forEach((row, i) => {
             const columnNumber = (i + trimYFrom + this.offsetY).toString().padStart(rowNumbersLength);
-            console.log(columnNumber, row.map(cell => cell ?? options.emptyCellValue).join(''));
+            console.log(columnNumber, row.map(cell => options.mapValue(cell ?? options.emptyCellValue)).join(''));
         });
     }
 
@@ -454,4 +464,99 @@ export default class Grid {
                    coordinate[1] < bottomRight[1];
         }
     }
+
+    static GetPathRotationDirection(path) {
+
+        const turns = {
+            clockwise: 0,
+            counterclockwise: 0
+        };
+
+        const moveDirections = [];
+
+        for(let i = 0; i < path.length; i++) {
+            const from = path[ i ];
+            const to = path[ (i + 1) % path.length ];
+
+            moveDirections.push(Grid.GetStepDirection(from, to));
+        }
+
+        return moveDirections.reduce((direction, currentMoveDirection, i, moveDirections) => {
+            const nextMoveDirection = moveDirections[ ( i + 1 ) % moveDirections.length ];
+
+            const rotationDirection = Grid.DetectTurnDirection(currentMoveDirection, nextMoveDirection);
+
+            if(rotationDirection === 'clockwise') {
+                return direction + 1;
+            }
+
+            if(rotationDirection === 'counterclockwise') {
+                return direction - 1;
+            }
+
+            return direction;
+        }, 0);
+
+    }
+
+    static GetStepDirection([ fromX, fromY ], [ toX, toY ]) {
+
+        const dx = toX - fromX;
+        const dy = toY - fromY;
+
+        if(dx === 0 && dy === 0) {
+            return;
+        }
+
+        if(Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+            throw new Error(`Range error: Unable to calculate more than a single step`);
+        }
+
+        const ds = `${dx},${dy}`;
+
+        switch(ds) {
+            case '0,-1':
+                return 'up';
+            case '1,-1':
+                return 'up_right';
+            case '1,0':
+                return 'right';
+            case '1,1':
+                return 'down_right';
+            case '0,1':
+                return 'down';
+            case '-1,1':
+                return 'down_left';
+            case '-1,0':
+                return 'left';
+            case '-1,-1':
+                return 'up_left';
+        }
+
+    }
+
+    static DetectTurnDirection(firstMoveDirection, secondMoveDirection) {
+        const Turns = {
+            up: {
+                right: 'clockwise',
+                left: 'counterclockwise'
+            },
+            right: {
+                up: 'counterclockwise',
+                down: 'clockwise'
+            },
+            down: {
+                right: 'counterclockwise',
+                left: 'clockwise'
+            },
+            left: {
+                up: 'clockwise',
+                down: 'counterclockwise'
+            }
+        };
+
+        return Turns[firstMoveDirection][secondMoveDirection] ?? 'straight';
+    }
 }
+
+export default Grid;
