@@ -1,11 +1,11 @@
-import { percent } from './Math';
+import { percent } from './Math.js';
 import _ from 'lodash';
 
 const SPINNER_CHARACTERS = ['|', '/', '-', '\\'];
 
 const SPINNER_INTERVAL = 250;
 
-class ProgressMeter {
+export class ProgressMeter {
 
   constructor(total, options) {
 
@@ -52,13 +52,15 @@ class ProgressMeter {
   }
 
   print() {
-    _.debounce(this._print(), 300, {
-      trailing: true
-    });
+    console.log(`${this.percentProgress}%`);
+
+    // _.debounce(this._print, 300, {
+    //   trailing: true
+    // });
   }
 
   _print() {
-
+    console.log(`${this.percentProgress}%`);
   }
 
 }
