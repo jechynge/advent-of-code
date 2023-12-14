@@ -1,6 +1,7 @@
 import { getLinesFromInput } from '../utils/Input.js';
 import { sum } from '../utils/Math.js';
 import _ from 'lodash';
+import { ProgressMeter } from '../utils/ProgressMeter.js';
 
 
 const BROKEN_SPRING = '#';
@@ -174,7 +175,10 @@ export async function secondPuzzle(input) {
 
     });
 
+    const progress = new ProgressMeter(springs.length);
+
     const total = springs.reduce((total, springInfo) => {
+        progress.tickProgress();
         return total + countBrokenSpringPositions(springInfo);
     }, 0);
 

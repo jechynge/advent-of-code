@@ -1,9 +1,12 @@
 import { percent } from './Math.js';
 import _ from 'lodash';
+import { stdin, stdout } from 'node:process';
+import * as readline from 'node:readline';
+import { Readline } from 'node:readline/promises';
 
 const SPINNER_CHARACTERS = ['|', '/', '-', '\\'];
 
-const SPINNER_INTERVAL = 250;
+const PRINT_INTERVAL = 150;
 
 export class ProgressMeter {
 
@@ -19,13 +22,23 @@ export class ProgressMeter {
 
     this.percentProgress = 0;
 
+    this.printTick = 0;
+
     Object.entries(options).forEach(([option, value]) => {
       this[option] = value;
     });
 
     if(this.showSpinner) {
-      this.spinnerInterval = setInterval(() => this.print(), SPINNER_INTERVAL);
+      this.spinnerInterval = setInterval(() => this.print(), PRINT_INTERVAL);
     }
+
+    this.out = new Readline(stdout, {
+      autoCommit: true
+    });
+
+    this.printTimeout = null;
+
+    console.log('');
 
   }
 
@@ -47,20 +60,45 @@ export class ProgressMeter {
     }
 
     if(this.progress === this.total) {
+      this.print.cancel();
       clearInterval(this.spinnerInterval);
+
+      this._print();
+
+      console.log('');
     }
   }
 
-  print() {
-    console.log(`${this.percentProgress}%`);
-
-    // _.debounce(this._print, 300, {
-    //   trailing: true
-    // });
-  }
+  
 
   _print() {
-    console.log(`${this.percentProgress}%`);
+    ++this.printTick;
+
+
+    const progressSegments = Math.floor(this.percentProgress / 5);
+
+    const meter = `[${''.padEnd(progressSegments, '=')}>${''.padEnd(20 - progressSegments, ' ')}] ${this.percentProgress.toString().padStart(3, ' ')}%`;
+
+    
+    const currentSpinner = this.progress === this.total ? '✓' : SPINNER_CHARACTERS[this.printTick % SPINNER_CHARACTERS.length];
+
+    const totalString = `${this.progress.toString().padStart(this.total.toString().length, ' ')} / ${this.total}`;
+
+    const stats = `${totalString}${''.padEnd(meter.length - 1 - totalString.length)}${currentSpinner}`;
+
+    readline.cursorTo(stdout, 0);
+    readline.moveCursor(stdout, 0, -1);
+
+    readline.clearScreenDown(stdout);
+
+    stdout.write(stats);
+
+    readline.cursorTo(stdout, 0);
+    readline.moveCursor(stdout, 0, 1);
+
+    stdout.write(meter)
   }
+
+  print = _.throttle(this._print, PRINT_INTERVAL);
 
 }
