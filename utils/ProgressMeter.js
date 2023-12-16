@@ -1,8 +1,7 @@
 import { percent } from './Math.js';
 import _ from 'lodash';
-import { stdin, stdout } from 'node:process';
+import { stdout } from 'node:process';
 import * as readline from 'node:readline';
-import { Readline } from 'node:readline/promises';
 
 const SPINNER_CHARACTERS = ['|', '/', '-', '\\'];
 
@@ -31,10 +30,6 @@ export class ProgressMeter {
     if(this.showSpinner) {
       this.spinnerInterval = setInterval(() => this.print(), PRINT_INTERVAL);
     }
-
-    this.out = new Readline(stdout, {
-      autoCommit: true
-    });
 
     this.printTimeout = null;
 
