@@ -13,7 +13,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/index.js",
-            "args": ["--day", "15", "--year", "2023"],
+            "args": ["--day", "14", "--year", "2023"],
             "console": "integratedTerminal"
         },
         {
