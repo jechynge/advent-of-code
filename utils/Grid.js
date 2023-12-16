@@ -296,6 +296,22 @@ export class Grid {
         });
     }
 
+    // Only checks the destination cell for valid movement
+    moveCell(coordinates, transform = [0,0]) {
+
+        const nextCoordinates = Grid.Transform2DCoordinate(coordinates, transform);
+
+        if(this.isValidCell(nextCoordinates) && this.getCell(nextCoordinates) === this.initialValue) {
+            this.setCell(nextCoordinates, this.getCell(coordinates));
+            this.setCell(coordinates, this.initialValue);
+
+            return nextCoordinates;
+        }
+
+        return false;
+
+    }
+
     findPopulatedRowBoundary() {
         const minPopulatedRow = this.grid.findIndex(row => row.some(cell => cell !== this.initialValue));
         const maxPopulatedRow = this.grid.findLastIndex(row => row.some(cell => cell !== this.initialValue));
@@ -332,7 +348,7 @@ export class Grid {
             for(let y = 0; y < this.height; y++) {
                 const outerCoordinates = Grid.Transform2DCoordinate([x,y], [this.offsetX, this.offsetY]);
 
-                accum = callback(accum, this.grid[y][x], outerCoordinates);
+                accum = callback(accum, this.grid[y][x], outerCoordinates, this);
             }
         }
 
@@ -348,6 +364,8 @@ export class Grid {
                 callback(this.grid[y][x], outerCoordinates);
             }
         }
+
+        return this;
 
     }
 

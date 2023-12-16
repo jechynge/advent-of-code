@@ -35,6 +35,8 @@ export class ProgressMeter {
 
     console.log('');
 
+    this._print();
+
   }
 
   tickProgress() {
