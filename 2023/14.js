@@ -123,8 +123,6 @@ export async function secondPuzzle(input) {
         
     }
 
-    grid.print();
-
     const reversed = [...loads].reverse();
 
     const cycleLength = detectCycle(reversed);

@@ -369,6 +369,27 @@ export class Grid {
 
     }
 
+    clone(deep = false) {
+
+        const clone = new Grid(this.width, this.height, this.initialValue, {
+            offsetX: this.offsetX,
+            offsetY: this.offsetY
+        });
+
+        if(deep) {
+            for(let i = 0; i < this.grid.length; i++) {
+                clone.grid[i] = CloneDeep(this.grid[i]);
+            }
+        } else {
+            for(let i = 0; i < this.grid.length; i++) {
+                clone.grid[i] = [ ...this.grid[i] ];
+            }
+        }
+
+        return clone;
+        
+    }
+
     print(options) {
 
         options = {
@@ -457,7 +478,7 @@ export class Grid {
     static Transform2DCoordinate(coordinate, ...transforms) {
         return transforms.reduce((coordinate, transform) => {
             return [coordinate[0] + transform[0], coordinate[1] + transform[1]];
-        }, coordinate);
+        }, [ ...coordinate ]);
     }
 
     static GetShapeCoordinates(shapeOrigin, shapeLayout, ...transforms) {
