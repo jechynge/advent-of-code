@@ -174,7 +174,7 @@ export async function secondPuzzle(input) {
     const rotationDirection = Grid.GetPathRotationDirection(path);
 
     // Ensure that we're traversing the loop clockwise
-    if(rotationDirection < 0) {
+    if(rotationDirection  === 'counterclockwise') {
         path = path.reverse();
     }
 
