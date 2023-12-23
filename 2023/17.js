@@ -48,7 +48,7 @@ export async function firstPuzzle(input) {
     const START_COORDINATES = [0, 0];
     const DESTINATION_COORDINATES = [ grid.width - 1, grid.height - 1 ];
 
-    const steps = [Step(null, START_COORDINATES, null, 0, 0, Grid.GetManhattanDistance(START_COORDINATES, DESTINATION_COORDINATES))];
+    const steps = [Step(null, START_COORDINATES, 100, 0, 0, Grid.GetManhattanDistance(START_COORDINATES, DESTINATION_COORDINATES))];
 
     let lastStep;
 
@@ -174,7 +174,7 @@ export async function secondPuzzle(input) {
     const START_COORDINATES = [0, 0];
     const DESTINATION_COORDINATES = [ grid.width - 1, grid.height - 1 ];
 
-    const steps = [Step(null, START_COORDINATES, null, 0, 0, Grid.GetManhattanDistance(START_COORDINATES, DESTINATION_COORDINATES))];
+    const steps = [Step(null, START_COORDINATES, 100, 0, 0, Grid.GetManhattanDistance(START_COORDINATES, DESTINATION_COORDINATES))];
 
     let lastStep;
 

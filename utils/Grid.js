@@ -2,6 +2,7 @@ import CloneDeep from 'lodash.clonedeep';
 import Range from './Range.js';
 import { getLinesFromInput } from './Input.js';
 import _ from 'lodash';
+import { identity } from './Math.js';
 
 export const GRID_CARDINAL_COORDINATES = ['top', 'right', 'bottom', 'left'];
 export const GRID_CARDINAL_TRANSFORMS = [
@@ -16,6 +17,10 @@ export const GRID_CARDINAL_MOVEMENT_NAMES = [
 ];
 
 export const GRID_CARDINAL_MOVEMENT = {
+    U: GRID_CARDINAL_TRANSFORMS[0],
+    R: GRID_CARDINAL_TRANSFORMS[1],
+    D: GRID_CARDINAL_TRANSFORMS[2],
+    L: GRID_CARDINAL_TRANSFORMS[3],
     up: GRID_CARDINAL_TRANSFORMS[0],
     right: GRID_CARDINAL_TRANSFORMS[1],
     down: GRID_CARDINAL_TRANSFORMS[2],
@@ -63,6 +68,12 @@ export const GRID_ORTHOGONAL_MOVEMENT = {
     west: GRID_ORTHOGONAL_TRANSFORMS[6],
     north_west: GRID_ORTHOGONAL_TRANSFORMS[7]
 }
+
+export const DIR_MATRIX = [
+    ['up_left', 'up', 'up_right'],
+    ['left', null, 'right'],
+    ['down_left', 'down', 'down_right']
+];
 
 export const constructGridFromInput = (input, splitOn = '', mapFunction = x => x, options = {}) => {
     const rows = getLinesFromInput(input).map((row) => row.split(splitOn).map(mapFunction));
@@ -481,6 +492,10 @@ export class Grid {
         }, [ ...coordinate ]);
     }
 
+    static Multiply2DCoordinate(coordinate, factor) {
+        return [ coordinate[0] * factor, coordinate[1] * factor ];
+    }
+
     static GetShapeCoordinates(shapeOrigin, shapeLayout, ...transforms) {
         return shapeLayout.reduce((coordinates, row, y) => {
             const rowCoordinates = row.map(x => Grid.Transform2DCoordinate(shapeOrigin, [x,y], ...transforms));
@@ -534,21 +549,18 @@ export class Grid {
 
     static GetPathRotationDirection(path) {
 
-        const turns = {
-            clockwise: 0,
-            counterclockwise: 0
-        };
-
         const moveDirections = [];
 
-        for(let i = 0; i < path.length; i++) {
+        const skipLastStep = Grid.AreCoordinatesEqual(path[ 0 ], path[ path.length - 1 ]);
+
+        for(let i = 0; i < path.length - skipLastStep; i++) {
             const from = path[ i ];
             const to = path[ (i + 1) % path.length ];
 
             moveDirections.push(Grid.GetStepDirection(from, to));
         }
 
-        return moveDirections.reduce((direction, currentMoveDirection, i, moveDirections) => {
+        const rotation = moveDirections.reduce((direction, currentMoveDirection, i, moveDirections) => {
             const nextMoveDirection = moveDirections[ ( i + 1 ) % moveDirections.length ];
 
             const rotationDirection = Grid.DetectTurnDirection(currentMoveDirection, nextMoveDirection);
@@ -564,41 +576,16 @@ export class Grid {
             return direction;
         }, 0);
 
+        return rotation > 0 ? 'clockwise' : 'counterclockwise';
+
     }
 
     static GetStepDirection([ fromX, fromY ], [ toX, toY ]) {
 
-        const dx = toX - fromX;
-        const dy = toY - fromY;
+        const identX = identity(toX - fromX);
+        const identY = identity(toY - fromY);
 
-        if(dx === 0 && dy === 0) {
-            return;
-        }
-
-        if(Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-            throw new Error(`Range error: Unable to calculate more than a single step`);
-        }
-
-        const ds = `${dx},${dy}`;
-
-        switch(ds) {
-            case '0,-1':
-                return 'up';
-            case '1,-1':
-                return 'up_right';
-            case '1,0':
-                return 'right';
-            case '1,1':
-                return 'down_right';
-            case '0,1':
-                return 'down';
-            case '-1,1':
-                return 'down_left';
-            case '-1,0':
-                return 'left';
-            case '-1,-1':
-                return 'up_left';
-        }
+        return DIR_MATRIX[identY + 1][identX + 1];
 
     }
 
@@ -623,6 +610,26 @@ export class Grid {
         };
 
         return Turns[firstMoveDirection][secondMoveDirection] ?? 'straight';
+    }
+
+    static CalculatePathArea(path) {
+        const rotation = Grid.GetPathRotationDirection(path);
+
+        if(rotation === 'counterclockwise') {
+            path.reverse();
+        }
+
+        const area = path.reduce((area, [ xa, ya ], i, path) => {
+            if(i === path.length - 1) {
+                return area;
+            }
+
+            const [ xb, yb ] = path[ i + 1 ];
+
+            return area + (xa * yb) - (xb * ya) + Math.abs(xa - xb + ya - yb);
+        }, 0);
+
+        return area / 2 + 1;
     }
 }
 
