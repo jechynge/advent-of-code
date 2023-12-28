@@ -25,7 +25,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/runTest.js",
-            "args": ["--day", "07", "--year", "2023"]
+            "args": ["--day", "21", "--year", "2023"]
         }
     ]
 }
