@@ -109,6 +109,14 @@ export class Grid {
         this.grid = new Array(this.height)
             .fill(undefined)
             .map(() => new Array(this.width).fill(this.initialValue));
+
+        if(typeof this.initialValue === 'function') {
+            for(let y = 0; y < this.height; y++) {
+                for(let x = 0; x < this.width; x++) {
+                    this.grid[ y ][ x ] = this.initialValue(this.getOffsetCoordinates([x, y]));
+                }
+            }
+        }
     }
 
     // Providing a negative value removes `offset` rows from the bottom and "scrolls" the grid upwards, with the top rows moving to the bottom
@@ -490,6 +498,14 @@ export class Grid {
         return transforms.reduce((coordinate, transform) => {
             return [coordinate[0] + transform[0], coordinate[1] + transform[1]];
         }, [ ...coordinate ]);
+    }
+
+    static TransformAndWrap2DCoordinate(coordinate, width, height, ...transforms) {
+        const [ x, y ] = transforms.reduce((coordinate, transform) => {
+            return [coordinate[0] + transform[0], coordinate[1] + transform[1]];
+        }, [ ...coordinate ]);
+
+        return [ Math.abs(x % width), Math.abs(y % height) ];
     }
 
     static Multiply2DCoordinate(coordinate, factor) {
