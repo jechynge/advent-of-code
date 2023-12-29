@@ -380,7 +380,7 @@ export class Grid {
             for(let y = 0; y < this.height; y++) {
                 const outerCoordinates = Grid.Transform2DCoordinate([x,y], [this.offsetX, this.offsetY]);
 
-                callback(this.grid[y][x], outerCoordinates);
+                callback(this.grid[y][x], outerCoordinates, this);
             }
         }
 

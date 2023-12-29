@@ -99,13 +99,26 @@ export async function firstPuzzle(input) {
 ////////////
 
 
-
 export async function secondPuzzle(input, maxSteps = 26501365) {
 
     const passableTiles = constructGridFromInput(input, '', (symbol) => symbol !== '#');
 
+    const evenOdd = maxSteps % 2;
+
     const edgeLength = passableTiles.width;
-    
+
+    const center = (edgeLength - 1) / 2;
+
+    const blockRadius = (maxSteps - center) / edgeLength;
+
+    const ABGrid = floodGrid(passableTiles, [ center, center ]).forEach(({ steps }, coordinates, grid) => {
+        if(steps === -1) {
+            grid.setCell(coordinates, null);
+        } else {
+            grid.setCell(coordinates, steps % 2 === evenOdd ? 'A' : 'B');
+        }
+    });
+
     const cornerCoordinates = [ 0, edgeLength - 1 ];
 
     const cornerFloods = [];
@@ -117,8 +130,6 @@ export async function secondPuzzle(input, maxSteps = 26501365) {
             cornerFloods.push(flooded);
         }
     }
-
-    const center = (edgeLength - 1) / 2;
     
     const edgeCoordinates = [ 
         [ 0, center ], 
@@ -137,29 +148,29 @@ export async function secondPuzzle(input, maxSteps = 26501365) {
 
     // Count the interior gardens that get fully explored
 
-    const fullyVisitedStepCounts = cornerFloods[0].reduce((count, { steps }) => {
-        if(steps === -1) {
+    const [ fullStepCountA, fullStepCountB ] = ABGrid.reduce((count, AB) => {
+        if(!AB) {
             return count;
         }
 
-        count[ steps % 2 ]++;
+        count[ AB.charCodeAt() - 65 ]++;
 
         return count;
     }, [ 0, 0 ]);
 
-    const fullGridCountA = (maxSteps - center) / edgeLength;
-    const fullGridCountB = fullGridCountA - 1;
 
-    const evenGardensSteps = fullyVisitedStepCounts[ (fullGridCountA + 1) % 2 ] * fullGridCountA * fullGridCountA;
-    const oddGardensSteps = fullyVisitedStepCounts[ (fullGridCountB + 1) % 2 ] * fullGridCountB * fullGridCountB;
+    const blockRadiusSquares = [ Math.pow(blockRadius, 2), Math.pow(blockRadius - 1, 2) ];
+    
+    const fullyExploredA = fullStepCountA * blockRadiusSquares[ (blockRadius + 1) % 2 ];
+    const fullyExploredB = fullStepCountB * blockRadiusSquares[ blockRadius % 2 ];
 
     // Count the points of the diamond
 
-    const evenOrOddPoints = (edgeLength - center) % 2;
+    const pointsAB = blockRadius % 2 === 0 ? 'A' : 'B';
 
     const pointCounts = edgeFloods.reduce((count, floodMap) => {
-        return count + floodMap.reduce((count, { steps }) => {
-            if(steps === -1 || steps > edgeLength || steps % 2 !== evenOrOddPoints) {
+        return count + floodMap.reduce((count, { steps }, coordinates) => {
+            if(steps === -1 || steps >= edgeLength || ABGrid.getCell(coordinates) !== pointsAB) {
                 return count;
             }
     
@@ -169,23 +180,27 @@ export async function secondPuzzle(input, maxSteps = 26501365) {
 
     // Count the diagonal edges
 
-    const evenOrOddExteriorDiagonal = (edgeLength - center) % 2;
+    const exteriorDiagonalEdgeLength = blockRadius;
+    const interiorDiagonalEdgeLength = blockRadius - 1;
 
-    const interiorDiagonalEdgeCounts = cornerFloods.map((floodMap) => {
-        const interiorEdgeCount = fullGridCountB * floodMap.reduce((count, { steps }) => {
-            if(steps === -1 || steps > edgeLength + center || steps % 2 === evenOrOddExteriorDiagonal) {
+    const exteriorDiagonalAB = blockRadius % 2 === 0 ? 'B' : 'A';
+    const interiorDiagonalAB = blockRadius % 2 === 0 ? 'A' : 'B';
+
+    const exteriorDiagonalEdgeCounts = cornerFloods.map((floodMap) => {
+        const exteriorEdgeCount = exteriorDiagonalEdgeLength * floodMap.reduce((count, { steps }, coordinates) => {
+            if(steps === -1 || steps >= center || ABGrid.getCell(coordinates) !== exteriorDiagonalAB) {
                 return count;
             }
     
             return count + 1;
         }, 0);
 
-        return interiorEdgeCount;
+        return exteriorEdgeCount;
     });
 
-    const exteriorDiagonalEdgeCounts = cornerFloods.map((floodMap) => {
-        const interiorEdgeCount = fullGridCountA * floodMap.reduce((count, { steps }) => {
-            if(steps === -1 || steps > center || steps % 2 !== evenOrOddExteriorDiagonal) {
+    const interiorDiagonalEdgeCounts = cornerFloods.map((floodMap) => {
+        const interiorEdgeCount = interiorDiagonalEdgeLength * floodMap.reduce((count, { steps }, coordinates) => {
+            if(steps === -1 || steps >= edgeLength + center || ABGrid.getCell(coordinates) !== interiorDiagonalAB) {
                 return count;
             }
     
@@ -197,36 +212,39 @@ export async function secondPuzzle(input, maxSteps = 26501365) {
 
     const diagonals = exteriorDiagonalEdgeCounts.reduce(calcSum, 0) + interiorDiagonalEdgeCounts.reduce(calcSum, 0);
 
-    return { answer: evenGardensSteps + oddGardensSteps + pointCounts + diagonals, extraInfo: undefined };
+    return { answer: fullyExploredA + fullyExploredB + pointCounts + diagonals, extraInfo: undefined };
 
 }
 
-// 606188475096422 (wrong - too high)
-// 606188475096440 (wrong - also too high)
-// 606188475096806
-// 606188400246061
-// 606188400245695
 
 export async function test(input) {
 
-    const EXPECTED = 25;
-    const { answer } = await secondPuzzle(input, 4);
+    const threeSq = '...\n...\n...';
+    const fiveSq = '.....\n.....\n.....\n.....\n.....';
+    const fiveSqBlocked = '.....\n...#.\n.....\n.#...\n.....';
+    const sevenSq = '.......\n.......\n.......\n.......\n.......\n.......\n.......';
 
-    return { passed: answer === EXPECTED, extraInfo: `Expected ${EXPECTED}, got ${answer}` };
+    const tests = [
+        [ 616583483179597, input, undefined ],
+        [ 25, threeSq, 4 ],
+        [ 64, threeSq, 7 ],
+        [ 64, fiveSq, 7 ],
+        [ 169, fiveSq, 12 ],
+        [ 151, fiveSqBlocked, 12 ]
+    ];
 
-    // const EXPECTED = 55;
-    // const { answer } = await secondPuzzle(input, 7);
+    const failed = [];
 
-    // return { passed: answer === EXPECTED, extraInfo: `Expected ${EXPECTED}, got ${answer}` };
+    for(let i = 0; i < tests.length; i++) {
+        const [ expected, input, ...params ] = tests[ i ];
 
-    // const EXPECTED = 151;
-    // const { answer } = await secondPuzzle(input, 12);
+        const { answer } = await secondPuzzle(input, ...params);
 
-    // return { passed: answer === EXPECTED, extraInfo: `Expected ${EXPECTED}, got ${answer}` };
+        if(answer !== expected) {
+            failed.push(`Test ${i}: expected ${expected} - got ${answer}`);
+        }
+    }
 
-    // const EXPECTED = 287;
-    // const { answer } = await secondPuzzle(input, 17);
-
-    // return { passed: answer === EXPECTED, extraInfo: `Expected ${EXPECTED}, got ${answer}` };
+    return { passed: failed.length === 0, extraInfo: failed.length === 0 ? `Passed ${tests.length} tests` : `Failed ${failed.length} tests:\n${failed.join('\n')}` };
 
 }
