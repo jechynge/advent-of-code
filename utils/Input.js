@@ -39,10 +39,6 @@ export function splitAndParseIntsFromLine(line, delimiter = ' ') {
         throw new Error(`Invalid type for param "delimiter" - expected string but got [${typeof delimiter}]`);
     }
 
-    if(delimiter.length !== 1) {
-        throw new Error(`Invalid type value param "delimiter" - must be a single character.`);
-    }
-
     return line.split(delimiter).map((stringInt, i) => {
         const numberInt = parseInt(stringInt);
 

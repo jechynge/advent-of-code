@@ -1,4 +1,4 @@
-import { getLinesFromInput } from '../utils/Input.js';
+import { getLinesFromInput, splitAndParseIntsFromLine} from '../utils/Input.js';
 
 
 ////////////
@@ -11,7 +11,7 @@ export async function firstPuzzle(input) {
     const col1 = [];
     const col2 = [];
 
-    getLinesFromInput(input).map(l => l.split('   ').map(x => parseInt(x))).forEach(([l, r]) => {
+    getLinesFromInput(input).map(line => splitAndParseIntsFromLine(line, '   ')).forEach(([l, r]) => {
 
         col1.push(l);
         col2.push(r);
@@ -40,7 +40,7 @@ export async function secondPuzzle(input) {
     const col1 = [];
     const col2 = [];
 
-    getLinesFromInput(input).map(l => l.split('   ').map(x => parseInt(x))).forEach(([l, r]) => {
+    getLinesFromInput(input).map(line => splitAndParseIntsFromLine(line, '   ')).forEach(([l, r]) => {
 
         col1.push(l);
         col2.push(r);
