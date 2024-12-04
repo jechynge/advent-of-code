@@ -7,11 +7,20 @@ export const CUBE_CARDINAL_TRANSFORMS = [
     [0,0,-1]
 ];
 
+export const CUBE_CARDINAL_MOVEMENT = {
+    X_POS: CUBE_CARDINAL_TRANSFORMS[ 2 ],
+    X_NEG: CUBE_CARDINAL_TRANSFORMS[ 3 ],
+    Y_POS: CUBE_CARDINAL_TRANSFORMS[ 1 ],
+    Y_NEG: CUBE_CARDINAL_TRANSFORMS[ 0 ],
+    Z_POS: CUBE_CARDINAL_TRANSFORMS[ 4 ],
+    Z_NEG: CUBE_CARDINAL_TRANSFORMS[ 5 ]
+};
+
 export default class Cube {
     constructor(width, height, depth, options) {
-        this.width = width;
-        this.height = height;
-        this.depth = depth;
+        this.width = width + (options?.baseOne ? 1 : 0);
+        this.height = height + (options?.baseOne ? 1 : 0);
+        this.depth = depth + (options?.baseOne ? 1 : 0);
 
         this.offsetX = options?.offsetX ?? 0;
         this.offsetY = options?.offsetY ?? 0;
@@ -84,31 +93,17 @@ export default class Cube {
 
         for(let x = startX; x <= endX; x++) {
             for(let y = startY; y <= endY; y++) {
-                for(let z = startZ; z < endZ; z++) {
+                for(let z = startZ; z <= endZ; z++) {
                     this._setCell([x, y, z], value, overwriteNonInitialValue);
                 }
             }
         }
     }
 
-    setShape(shapeOrigin, shapeLayout, value, overwriteNonInitialValue = true) {
-        const shapeCoordinates = Cube.GetShapeCoordinates(shapeOrigin, shapeLayout);
-
-        shapeCoordinates.forEach((coordinate) => {
-            if(!this.isValidCell(coordinate)) {
-                throw new Error(`Shape coordinate [${coordinate.join(', ')}] is invalid! ${this.validDimensions()}`);
-            }
-        });
-
-        shapeCoordinates.forEach(coordinates => {
-            this._setCell(coordinates, value, overwriteNonInitialValue);
-        });
-    }
-
-    // shapeOrigin is the top left front coordinate
-    isValidMove(shapeOrigin, hitbox, transform = [0,0,0]) {
-        return Cube.GetShapeCoordinates(shapeOrigin, hitbox, transform).every(nextPosition => {
-            return this.isValidCell(nextPosition) && !this.getCell(nextPosition);
+    
+    isValidMove(coordinates, transform = [0,0,0]) {
+        return coordinates.map(coordinate => Cube.Transform3DCoordinate(coordinate, transform)).every(nextPosition => {
+            return this.isValidCell(nextPosition) && this.getCell(nextPosition) === this.initialValue;
         });
     }
 
@@ -138,8 +133,6 @@ export default class Cube {
             const currentStep = cellDetails.getCell(currentCoordinates);
 
             const nextSteps = CUBE_CARDINAL_TRANSFORMS.map(transform => Cube.Transform3DCoordinate(currentCoordinates, transform)).map(maybeNextCoordinates => {
-                const currentHeight = this.getCell(currentCoordinates);
-                const height = this.getCell(maybeNextCoordinates);
 
                 if(this.getCell(maybeNextCoordinates) !== this.initialValue) {
                     return null;
