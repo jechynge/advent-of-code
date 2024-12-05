@@ -36,22 +36,17 @@ export async function secondPuzzle(input) {
 
 export async function test(input) {
 
-    const tests = [
-        
-    ];
+    const firstExpectedAnswer = null;
 
-    const failed = [];
+    const firstActualAnswer = await firstPuzzle(input);
 
-    for(let i = 0; i < tests.length; i++) {
-        const [ expected, input, ...params ] = tests[ i ];
+    const secondExpectedAnswer = null;
 
-        const { answer } = await secondPuzzle(input, ...params);
+    const secondActualAnswer = await secondPuzzle(input);
 
-        if(answer !== expected) {
-            failed.push(`Test ${i}: expected ${expected} - got ${answer}`);
-        }
-    }
-
-    return { passed: failed.length === 0, extraInfo: failed.length === 0 ? `Passed ${tests.length} tests` : `Failed ${failed.length} tests:\n${failed.join('\n')}` };
+    return { 
+        passed: firstExpectedAnswer === firstActualAnswer.answer 
+            && secondActualAnswer.answer === secondExpectedAnswer, 
+        extraInfo: `First Puzzle: Expected ${firstExpectedAnswer} - Got ${firstActualAnswer.answer}\nSecond Puzzle: Expected ${secondExpectedAnswer} - Got ${secondActualAnswer.answer}` };
 
 }

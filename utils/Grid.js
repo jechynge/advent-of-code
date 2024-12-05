@@ -173,9 +173,9 @@ export class Grid {
         return x >= 0 && x < this.width && y >= 0 && y < this.height;
     }
 
-    getCell(coordinates) {
+    getCell(coordinates, defaultValue = null) {
         if(!this.isValidCell(coordinates)) {
-            return null;
+            return defaultValue;
         }
 
         const [x, y] = this.getOffsetCoordinates(coordinates);
