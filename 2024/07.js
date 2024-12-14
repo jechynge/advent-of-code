@@ -27,6 +27,25 @@ const tryAddMul = (ops, target) => {
     
 }
 
+const tryAddMulI = (ops, target) => {
+
+    const inner = (accum, i = 1) => {
+        if(accum > target) {
+            return false;
+        }
+    
+        if(i === ops.length) {
+            return accum === target;
+        }
+    
+        return inner(accum * ops[ i ], i + 1) ||
+               inner(accum + ops[ i ], i + 1);
+    }
+
+    return inner(ops[ 0 ]);
+    
+}
+
 
 export async function firstPuzzle(input) {
 
@@ -37,7 +56,7 @@ export async function firstPuzzle(input) {
 
         return [ parseInt(result), ops ];
     }).reduce((sum, [ target, ops ]) => {
-        return tryAddMul(ops, target) ? sum + target : sum;
+        return tryAddMulI(ops, target) ? sum + target : sum;
     }, 0);  
 
     return { answer: opSum, extraInfo: undefined };
