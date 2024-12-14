@@ -36,3 +36,5 @@ secondPuzzleTimer.stop();
 printResult(`Part 2 Result`, secondPuzzleResult.answer, secondPuzzleTimer, secondPuzzleResult.extraInfo);
 
 console.log('\nDone!\n');
+
+process.exit(0);

@@ -24,3 +24,5 @@ const testResult = await test(input);
 printResult(`Test Result:`, testResult.passed ? 'Pass' : 'Fail', null, testResult.extraInfo);
 
 console.log('\nDone!\n');
+
+process.exit(0);

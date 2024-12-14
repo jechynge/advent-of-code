@@ -28,7 +28,49 @@ export const GRID_CARDINAL_MOVEMENT = {
     north: GRID_CARDINAL_TRANSFORMS[0],
     east: GRID_CARDINAL_TRANSFORMS[1],
     south: GRID_CARDINAL_TRANSFORMS[2],
-    west: GRID_CARDINAL_TRANSFORMS[3]
+    west: GRID_CARDINAL_TRANSFORMS[3],
+    '^': GRID_CARDINAL_TRANSFORMS[0],
+    '>': GRID_CARDINAL_TRANSFORMS[1],
+    'v': GRID_CARDINAL_TRANSFORMS[2],
+    '<': GRID_CARDINAL_TRANSFORMS[3],
+}
+
+export const GRID_CARDINAL_ROTATION_CW = {
+    U: 'R',
+    R: 'D',
+    D: 'L',
+    L: 'U',
+    up: 'right',
+    right: 'down',
+    down: 'left',
+    left: 'up',
+    north: 'east',
+    east: 'south',
+    south: 'west',
+    west: 'north',
+    '^': '>',
+    '>': 'v',
+    'v': '<',
+    '<': '^',
+}
+
+export const GRID_CARDINAL_ROTATION_CCW = {
+    U: 'L',
+    R: 'U',
+    D: 'R',
+    L: 'D',
+    up: 'left',
+    right: 'up',
+    down: 'right',
+    left: 'down',
+    north: 'west',
+    east: 'north',
+    south: 'east',
+    west: 'south',
+    '^': '<',
+    '>': '^',
+    'v': '>',
+    '<': 'v',
 }
 
 export const GRID_ORTHOGONAL_TRANSFORMS = [
@@ -76,7 +118,7 @@ export const DIR_MATRIX = [
 ];
 
 export const constructGridFromInput = (input, splitOn = '', mapFunction = x => x, options = {}) => {
-    const rows = getLinesFromInput(input).map((row) => row.split(splitOn).map(mapFunction));
+    const rows = getLinesFromInput(input).map((row) => row.split(splitOn));
 
     const height = rows.length;
     const width = rows[0].length;
@@ -89,7 +131,7 @@ export const constructGridFromInput = (input, splitOn = '', mapFunction = x => x
 
     for(let x = 0; x < width; x++) {
         for(let y = 0; y < height; y++) {
-            grid.setCell([x, y], rows[y][x]);
+            grid.setCell([x, y], mapFunction(rows[y][x], grid.getOffsetCoordinates([ x, y ])));
         }
     }
 
