@@ -16,13 +16,14 @@ const tryAddMul = (ops, target) => {
     const op2 = ops.shift();
 
     const mul = op1 * op2;
+
+    const mulValid = mul <= target && tryAddMul([ mul, ...ops ], target);
+
+    if(mulValid) return true;
+
     const add = op1 + op2;
-
-    const mulValid = mul <= target ? tryAddMul([ mul, ...ops ], target) : false;
     
-    const addValid = add <= target ? tryAddMul([ add, ...ops ], target) : false;
-
-    return mulValid || addValid;
+    return add <= target && tryAddMul([ add, ...ops ], target);
     
 }
 
@@ -59,19 +60,42 @@ const tryAddMulConcat = (ops, target) => {
     const op2 = ops.shift();
 
     const mul = op1 * op2;
-    const add = op1 + op2;
+
+    const mulValid = mul <= target && tryAddMulConcat([ mul, ...ops ], target);
+
+    if(mulValid) return true;
+    
     const concat = parseInt(`${op1}${op2}`);
 
-    const mulValid = mul <= target ? tryAddMulConcat([ mul, ...ops ], target) : false;
-    
-    const addValid = add <= target ? tryAddMulConcat([ add, ...ops ], target) : false;
+    const concatValid = concat <= target && tryAddMulConcat([ concat, ...ops ], target);
 
-    const concatValid = concat <= target ? tryAddMulConcat([ concat, ...ops ], target) : false;
+    if(concatValid) return true;
 
-    return mulValid || addValid || concatValid;
+    const add = op1 + op2;
+
+    return add <= target && tryAddMulConcat([ add, ...ops ], target);
     
 }
 
+const tryAddMulConcatI = (ops, target) => {
+
+    const inner = (accum, i = 1) => {
+        if(accum > target) {
+            return false;
+        }
+    
+        if(i === ops.length) {
+            return accum === target;
+        }
+    
+        return inner(accum * ops[ i ], i + 1) ||
+               inner(parseInt(`${accum}${ops[ i ]}`), i + 1) ||
+               inner(accum + ops[ i ], i + 1);
+    }
+
+    return inner(ops[ 0 ]);
+    
+}
 
 export async function secondPuzzle(input) {
 
@@ -82,7 +106,7 @@ export async function secondPuzzle(input) {
 
         return [ parseInt(result), ops ];
     }).reduce((sum, [ target, ops ]) => {
-        return tryAddMulConcat(ops, target) ? sum + target : sum;
+        return tryAddMulConcatI(ops, target) ? sum + target : sum;
     }, 0);  
 
     return { answer: opSum, extraInfo: undefined };
