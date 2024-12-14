@@ -56,24 +56,22 @@ export async function firstPuzzle(input) {
 
 export async function secondPuzzle(input) {
 
-    let startPosition;
+    let guardPosition;
+    let guardDirection;
 
     const map = constructGridFromInput(input, '', (char, coordinates) => {
         if(char === '^' || char === '>' || char === 'v' || char === '<') {
-            startPosition = [ ...coordinates ];
+            guardPosition = [ ...coordinates ];
+            guardDirection = char;
         }
 
         return char;
     });
 
-    let guardPosition = [ ...startPosition ];
-
     let anomalyPositions = {};
 
     while(true) {
         
-        const currentCell = map.getCell(guardPosition) ?? '';
-        const guardDirection = currentCell.substr(-1);
         const nextCoordinates = Grid.Transform2DCoordinate(guardPosition, GRID_CARDINAL_MOVEMENT[ guardDirection ]);
         const nextCell = map.getCell(nextCoordinates);
 
@@ -81,8 +79,11 @@ export async function secondPuzzle(input) {
             break;
         }
 
+        const currentCell = map.getCell(guardPosition) ?? '';
+
         if(nextCell === '#') {
-            map.setCell(guardPosition, `${currentCell}${GRID_CARDINAL_ROTATION_CW[ guardDirection ]}`);
+            guardDirection = GRID_CARDINAL_ROTATION_CW[ guardDirection ];
+            map.setCell(guardPosition, `${currentCell}${guardDirection}`);
             continue;
         }
 
@@ -106,33 +107,35 @@ export async function secondPuzzle(input) {
                     break;
                 }
 
-                // Check the permanent path if we've traversed this cell in 
-                // this direction
-                const currentTestCell = map.getCell(testGuardPosition);
-
-                if(currentTestCell.indexOf(testGuardDirection) > -1) {
-                    anomalyPositions[testObstaclePosition.join(',')] = 'p';
-                    break;
-                }
-
-                // Check the new path we've created by placing an obstacle to
-                // see if we've traversed in this direction
-                const vk = testGuardPosition.join(',');
-                const vr = testPath[vk] ?? '';
-
-                if(vr.indexOf(testGuardDirection) > -1) {
-                    anomalyPositions[testObstaclePosition.join(',')] = 'n';
-                    break;
-                }
-
-                // Mark the test path with our current direction
-                testPath[vk] = `${vr}${testGuardDirection}`;
-
                 // Check if we've run into a permanent obstacle or our proposed
                 // obstacle
                 if(nextTestCell === '#' || Grid.AreCoordinatesEqual(nextTestGuardPosition, testObstaclePosition)) {
+
+                    // Check the permanent path if we've traversed this cell in 
+                    // this direction
+                    const currentTestCell = map.getCell(testGuardPosition);
+
+                    if(currentTestCell.indexOf(testGuardDirection) > -1) {
+                        anomalyPositions[testObstaclePosition.join(',')] = 'p';
+                        break;
+                    }
+
+                    // Check the new path we've created by placing an obstacle to
+                    // see if we've traversed in this direction
+                    const vk = testGuardPosition.join(',');
+                    const vr = testPath[vk] ?? '';
+
+                    if(vr.indexOf(testGuardDirection) > -1) {
+                        anomalyPositions[testObstaclePosition.join(',')] = 'n';
+                        break;
+                    }
+
+                    // Mark the test path with our current direction
+                    testPath[vk] = `${vr}${testGuardDirection}`;
+
                     testGuardDirection = GRID_CARDINAL_ROTATION_CW[ testGuardDirection ];
                     continue;
+                    
                 }
 
                 // Otherwise, keep moving our test guard
