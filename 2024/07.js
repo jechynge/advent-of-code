@@ -1,5 +1,5 @@
 import { getLinesFromInput } from '../utils/Input.js';
-import { Grid, constructGridFromInput } from '../utils/Grid.js';
+import { intDigits } from '../utils/Math.js';
 
 ////////////
 // Part 1 //
@@ -108,7 +108,7 @@ const tryAddMulConcatI = (ops, target) => {
         }
     
         return inner(accum * ops[ i ], i + 1) ||
-               inner(parseInt(`${accum}${ops[ i ]}`), i + 1) ||
+               inner(accum * 10 ** intDigits(ops[i]) + ops[ i ], i + 1) ||
                inner(accum + ops[ i ], i + 1);
     }
 

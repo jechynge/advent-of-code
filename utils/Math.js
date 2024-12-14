@@ -11,3 +11,15 @@ export const percent = (numerator, denominator, max = Infinity) => Math.min(max,
 export const isPowerOfTwo = (x) => !!x && ((x & (x - 1)) === 0);
 
 export const identity = (x) => x === 0 ? 0 : x / Math.abs(x);
+
+export const intDigits = (x) => {
+    x = Math.abs(x);
+    
+    for(let i = 0; true; i++) {
+        if(x < 1) {
+            return i;
+        }
+
+        x /= 10;
+    }
+};
