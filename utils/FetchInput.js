@@ -39,7 +39,8 @@ export default async function FetchInput(year, day, loadTest = false) {
         withCredentials: true,
         headers: {
             cookie: `session=${session}`
-        }
+        },
+        responseType: 'text'
     });
 
     if(response.status !== 200) {
