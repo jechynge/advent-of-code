@@ -146,6 +146,33 @@ export class LinkedList {
 
     }
 
+    insertBefore(cursorNode, newItem) {
+        newItem.prev = cursorNode.prev;
+
+        if(cursorNode === this.head) {
+            this.head = newItem;
+        } else {
+            cursorNode.prev.next = newItem;
+        }
+
+        newItem.next = cursorNode;
+        cursorNode.prev = newItem;
+
+        this.hash[ newItem.key ] = newItem;
+        ++this.length;
+
+        return newItem;
+    }
+
+    static CreateListItem(key, value) {
+        return {
+            prev: null,
+            next: null,
+            key,
+            value
+        }
+    }
+
     // get tail() {
     //     return this.length === 0 ? null : this.order[this.order.length - 1];
     // }
