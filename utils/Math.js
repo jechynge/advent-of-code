@@ -23,3 +23,5 @@ export const intDigits = (x) => {
         x /= 10;
     }
 };
+
+export const parseSingleDigitInt = (s) => s.charCodeAt(0) - 48;
